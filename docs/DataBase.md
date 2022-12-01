@@ -1,0 +1,2 @@
+- HASH函数选择
+    - Google FarmHash
