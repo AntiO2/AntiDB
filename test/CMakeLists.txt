@@ -15,3 +15,9 @@ target_link_libraries(executor_test
         executor
         parser
         ${GTEST_LIB})
+
+### storage_test
+add_executable(storage_test storage_test.cpp)
+target_link_libraries(storage_test
+        storage
+        ${GTEST_LIB})

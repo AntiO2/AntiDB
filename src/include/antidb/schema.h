@@ -19,9 +19,13 @@ namespace antidb {
             offset_ += col.GetColumnSize();
         }
 
+        [[nodiscard]] uint32_t GetSize() const {
+            return offset_;
+        }
+
     private:
         std::vector<Column> cols_;
-        uint32_t offset_;
+        uint32_t offset_{0};
     };
 }
 

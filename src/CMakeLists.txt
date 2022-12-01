@@ -5,7 +5,8 @@ add_library(parser
 
 add_library(storage
         STATIC
-        disk_manager.cpp)
+        disk_manager.cpp
+        )
 
 add_library(executor
         STATIC

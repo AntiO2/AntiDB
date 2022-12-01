@@ -22,7 +22,7 @@ namespace antidb{
             }
             if(type==STRING)
             {
-                col_size_=32;
+                col_size_ = 256;
             }
         }
         Column(TYPE_ID type,std::string& col_name)
