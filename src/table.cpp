@@ -16,10 +16,10 @@ namespace antidb {
          * TODO(AntiO2) 如果在磁盘上已经存在该表名字
          *
          */
-        if (std::filesystem::exists(table_name + ".dat")) {
-
-        } else {
-            std::
-        }
+//        if (std::filesystem::exists(table_name + ".dat")) {
+//
+//        } else {
+//            std::
+//        }
     }
 } // antidb

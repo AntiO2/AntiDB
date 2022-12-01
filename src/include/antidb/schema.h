@@ -5,7 +5,9 @@
 #ifndef ANTIDB_SCHEMA_H
 #define ANTIDB_SCHEMA_H
 
+#include <utility>
 #include <vector>
+#include <iostream>
 #include "antidb/column.h"
 #include "antidb/config.h"
 
@@ -23,9 +25,25 @@ namespace antidb {
             return offset_;
         }
 
+        [[nodiscard]] bool Has_Primary() const {
+            return has_primary;
+        };
+
+        auto Set_Primary(bool is_primary) -> void {
+            has_primary = is_primary;
+        }
+
+        auto toString() -> void {
+            for (auto col: cols_) {
+                col.toString();
+                std::cout << std::endl;
+            }
+        }
+
     private:
         std::vector<Column> cols_;
         uint32_t offset_{0};
+        bool has_primary{false};
     };
 }
 

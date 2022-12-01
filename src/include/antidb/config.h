@@ -31,7 +31,6 @@ namespace antidb {
         INT,
         STRING
     };
-
     using page_id_t = int32_t;
 
 

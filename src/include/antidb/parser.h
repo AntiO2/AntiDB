@@ -37,6 +37,10 @@ namespace antidb {
 
         static auto parse_use(Statement &statement) -> Statement *;
 
+        static auto is_token(char &c) -> bool;
+
+        static auto is_space(char &c) -> bool;
+
     private:
         /**
          * 去除最后的分号

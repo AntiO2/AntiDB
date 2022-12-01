@@ -1,4 +1,3 @@
-include_directories(include)
 add_library(parser
         STATIC
         parser.cpp)

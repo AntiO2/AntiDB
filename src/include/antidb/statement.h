@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "antidb/config.h"
-
+#include "antidb/schema.h"
 namespace antidb {
 
     class Statement {
@@ -29,7 +29,7 @@ namespace antidb {
 
         std::string name_;
         CREATE_TYPE createType_{CREATE_DATABASE};
-
+        Schema schema_;
     };
 } // antidb
 
