@@ -2,7 +2,6 @@
 // Created by Anti on 2022/12/1.
 //
 #include "iostream"
-#include <cstdio>
 #include "gtest/gtest.h"
 #include "antidb/tuple.h"
 #include "antidb/value.h"
@@ -48,8 +47,11 @@ namespace antidb {
         for (auto i = 0; i < 10; i++) {
             auto new_t = Tuple(c_stmt->schema_.GetSize());
             table.ReadTuple(new_t, i);
-            char data[4096];
-            new_t.write(data);
+            std::vector<Value> vs;
+            new_t.deserialize(vs, c_stmt->schema_);
+            EXPECT_EQ(vs[0].GetInt(), 2003);
+            EXPECT_EQ(vs[1].GetInt(), 814);
+            std::cout << strlen(vs[2].GetSTRING()) << " " << vs[2].GetSTRING() << std::endl;
         }
     }
 }

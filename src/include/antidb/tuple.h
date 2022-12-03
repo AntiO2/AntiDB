@@ -21,6 +21,11 @@ namespace antidb {
             size_ = size;
         }
 
+        /**
+         * 将value序列化为data
+         * @param values
+         * @param schema
+         */
         Tuple(std::vector<Value> &values, Schema &schema) {
             size_ = schema.GetSize();
             data_ = malloc(size_);
@@ -51,6 +56,27 @@ namespace antidb {
          */
         void read(char *src) {
             memcpy(data_, src, size_);
+        }
+
+        void deserialize(std::vector<Value> &values, Schema &schema) {
+            auto offset = 0;
+            for (const auto &col: schema.cols_) {
+                switch (col.type_) {
+                    case INT: {
+                        int integer;
+                        memcpy((unsigned char *) &integer, (char *) data_ + offset, 4);
+                        values.emplace_back(INT, integer);
+                        offset += 4;
+                        break;
+                    }
+                    case STRING: {
+                        values.emplace_back(STRING, (char *) data_ + offset, MAX_STRING_SIZE);
+                        offset += MAX_STRING_SIZE;
+                        break;
+                    }
+
+                }
+            }
         }
 
         friend std::ostream &operator<<(std::ostream &os, const Tuple &tuple) {

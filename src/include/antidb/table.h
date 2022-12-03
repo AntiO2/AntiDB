@@ -27,7 +27,7 @@ namespace antidb {
         void ReadTuple(Tuple &tuple, tuple_id_t tupleId);
 
         char *LocateTuple(const uint32_t &RID);//通过编号获取写入位置
-        void Debug_Info() const;
+
 
     private:
         Schema schema_;

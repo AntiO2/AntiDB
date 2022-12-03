@@ -63,10 +63,6 @@ namespace antidb {
         tuple.read((char *) LocateTuple(tupleId));
     }
 
-    void Table::Debug_Info() const {
-        std::cout << "tuple_per_page_: " << tuple_per_page_ << std::endl;
-        std::cout << "tuple_max_num_: " << tuple_max_num_ << std::endl;
-    }
 
 
 } // antidb
