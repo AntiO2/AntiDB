@@ -1,7 +1,7 @@
 //
 // Created by Anti on 2022/11/25.
 //
-
+#pragma once
 #ifndef ANTIDB_PHASER_H
 #define ANTIDB_PHASER_H
 
@@ -35,7 +35,11 @@ namespace antidb {
 
         static auto parse_delete(Statement &statement) -> Statement *;
 
-        static auto parse_use(Statement &statement) -> Statement *;
+        static auto parse_use(Statement &statement) -> Use_Statement *;
+
+        static auto is_token(char &c) -> bool;
+
+        static auto is_space(char &c) -> bool;
 
     private:
         /**

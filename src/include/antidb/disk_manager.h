@@ -27,7 +27,7 @@ namespace antidb {
         virtual void ReadPage(page_id_t page_id, char *page_data);
 
     protected:
-        auto GetFileSize(const std::string &file_name) -> int;
+        static auto GetFileSize(const std::string &file_name) -> int;
 
         std::fstream file_io_;
         std::string file_name_;
