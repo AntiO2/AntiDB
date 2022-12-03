@@ -1,7 +1,7 @@
 //
 // Created by Anti on 2022/11/30.
 //
-
+#pragma once
 #ifndef ANTIDB_SCHEMA_H
 #define ANTIDB_SCHEMA_H
 
@@ -16,7 +16,7 @@ namespace antidb {
     public:
         Schema() = default;
 
-        void AddCols(Column &col) {
+        void AddCols(Column &&col) {
             cols_.push_back(col);
             offset_ += col.GetColumnSize();
         }
@@ -36,7 +36,6 @@ namespace antidb {
         auto toString() -> void {
             for (auto col: cols_) {
                 col.toString();
-                std::cout << std::endl;
             }
         }
 

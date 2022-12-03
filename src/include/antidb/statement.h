@@ -1,7 +1,7 @@
 //
 // Created by Anti on 2022/11/29.
 //
-
+#pragma once
 #ifndef ANTIDB_STATEMENT_H
 #define ANTIDB_STATEMENT_H
 
@@ -11,8 +11,11 @@
 
 #include "antidb/config.h"
 #include "antidb/schema.h"
-namespace antidb {
 
+namespace antidb {
+    /**
+     * 这是一个抽象的声明，用于获取token
+     */
     class Statement {
     public:
         explicit Statement(std::string commandline) : commandline_(std::move(commandline)) {};
@@ -22,14 +25,18 @@ namespace antidb {
     };
 
     class Create_Statement : public Statement {
-    private:
-
     public:
-        explicit Create_Statement(Statement &&statement) : Statement(std::move(statement)) {}
+        explicit Create_Statement(Statement &&statement) : Statement(std::move(statement)) {};
 
         std::string name_;
         CREATE_TYPE createType_{CREATE_DATABASE};
         Schema schema_;
+    };
+
+    class Use_Statement : public Statement {
+    public:
+        explicit Use_Statement(Statement &&stmt) : Statement(std::move(stmt)) {};
+        std::string db_name_;
     };
 } // antidb
 

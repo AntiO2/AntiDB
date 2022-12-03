@@ -1,7 +1,7 @@
 //
 // Created by Anti on 2022/11/25.
 //
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #include "iostream"
 using std::cout;
@@ -82,7 +82,9 @@ namespace antidb {
         }
         if (first_token == "create") {
             statement.sqlType_ = CREATE;
-            return parse_create(statement);
+            //return parse_create(statement);
+            auto res = parse_create(statement);
+            return res;
         }
         if (first_token == "delete") {
             statement.sqlType_ = DELETE;
@@ -188,7 +190,7 @@ namespace antidb {
             throw error_command("Argument Number isn't CORRECT");
         }
         std::transform(statement.tokens[1].begin(), statement.tokens[1].end(), statement.tokens[1].begin(), toupper);
-        auto createStatement = std::make_shared<Create_Statement>(std::move(statement));
+        auto createStatement = new Create_Statement(std::move(statement));
         if (createStatement->tokens[1] == "TABLE") {
             /**
              * create table table_name (  ); 至少有五个单词
@@ -210,26 +212,31 @@ namespace antidb {
             if (*createStatement->tokens.rbegin() != ")") {
                 throw error_command("Create Table statement should end with ')'");
             }
-            Column new_col;
+            Column new_col = *new Column();
             int cnt = 0;
+            /**
+             * CHECK(AntiO2) not right
+             */
             for (int i = 4; i < createStatement->tokens.size(); i++) {
+
                 auto token = createStatement->tokens[i];
                 if (token == ")") {
                     if (cnt != 0) {
-                        createStatement->schema_.AddCols(new_col);
+                        createStatement->schema_.AddCols(std::move(new_col));
                     }
-
                     break;
                 }
                 switch (cnt) {
                     case 0://处理列名阶段
                         new_col.col_name_ = token;
                         cnt++;
+
                         break;
                     case 1://处理类型阶段
                         if (token == "int") {
                             new_col.type_ = INT;
                             new_col.col_size_ = 4;
+
                         } else if (token == "string") {
                             new_col.type_ = STRING;
                             new_col.col_size_ = MAX_STRING_SIZE;
@@ -240,7 +247,7 @@ namespace antidb {
                         break;
                     case 2://处理主键，或者结束一个列的定义
                         if (token == ",") {
-                            createStatement->schema_.AddCols(new_col);
+                            createStatement->schema_.AddCols(std::move(new_col));
                             new_col = *new Column();
                             cnt = 0;
                             break;
@@ -251,16 +258,13 @@ namespace antidb {
                             }
                             createStatement->schema_.Set_Primary(true);
                             new_col.is_primary_ = true;
-                            cnt = 0;
-                            createStatement->schema_.AddCols(new_col);
-                            new_col = *new Column();
                             break;
                         }
                     default:
                         throw error_command("Invalid creat table,please check it");
                 }
             }
-            return nullptr;
+            return createStatement;
         }
         if (createStatement->tokens[1] == "DATABASE") {
             if (createStatement->tokens.size() != 3) {
@@ -268,7 +272,7 @@ namespace antidb {
             }
             createStatement->name_ = createStatement->tokens[2];
             createStatement->createType_ = CREATE_DATABASE;
-            return createStatement.get();
+            return createStatement;
         }
         return nullptr;
     }
@@ -281,8 +285,19 @@ namespace antidb {
         return nullptr;
     }
 
-    auto Parser::parse_use(Statement &statement) -> Statement * {
-        return nullptr;
+    auto Parser::parse_use(Statement &statement) -> Use_Statement * {
+        auto u_stmt = new Use_Statement(std::move(statement));
+        /**
+         * 比如 use antidb,只需要俩token，多了就错了
+         */
+        if (u_stmt->tokens.size() != 2) {
+            throw error_command("Argument isn't correct! e.g. Use <dbname>");
+        }
+        if (u_stmt->tokens[1].empty()) {
+            throw error_command("No DB name ! e.g. Use <dbname>");
+        }
+        u_stmt->db_name_ = u_stmt->tokens[1];
+        return u_stmt;
     }
 
     auto Parser::parse_delete(Statement &statement) -> Statement * {

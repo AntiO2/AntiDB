@@ -7,14 +7,11 @@
 #include <string>
 #include <iostream>
 #include "antidb/config.h"
-#include "antidb/parser.h"
 namespace antidb{
     class Column {
     friend class Table;
 
         friend class Schema;
-
-        friend class Parser;
     public:
         Column() = default;
         Column(TYPE_ID type,std::string& col_name,bool is_primary)
@@ -57,11 +54,15 @@ namespace antidb{
             std::cout << col_name_ << " " << type_ << " " << is_primary_ << std::endl;
         }
 
-    private:
+        /**
+         * TODO(ANTI) Make it private later
+         */
         TYPE_ID type_;
         std::string col_name_;
         bool is_primary_{false};
         uint32_t col_size_;
+    private:
+
     };
 }
 #endif //ANTIDB_COLUMN_H

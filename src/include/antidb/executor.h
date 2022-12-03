@@ -21,6 +21,12 @@ namespace antidb {
 
         static auto CreateDataBase(const std::string &database_name) -> bool;
     };
+
+    class UseExecutor : AbstractExecutor {
+    public:
+
+        static auto UseDataBase(const std::string &database_name, std::string &server_db_name) -> void;
+    };
 } // antidb
 
 #endif //ANTIDB_EXECUTOR_H

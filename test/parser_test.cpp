@@ -46,18 +46,23 @@ namespace antidb {
         EXPECT_EQ(sqlType, antidb::INSERT);
     }
 
-    TEST(PARSER_TEST, DISABLED_TOKEN_v2) {
+    TEST(PARSER_TEST, TOKEN_v2) {
         std::vector<std::string> tokens;
         antidb::Parser parse_instance;
-        std::string sql(" create table (column int primary,email string ,anti int);; ");
+        std::string sql(" create table new_table(column int primary,email string ,anti int); ");
         antidb::SQL_type sqlType;
         antidb::Parser::get_token(sql, tokens);
+//        for(const auto& token:tokens)
+//        {
+//            std::cout<<token<<std::endl;
+//        }
     }
 
     TEST(PARSER_TEST, CREATE_TABLE) {
-        std::string sql(" create table (column int primary,email string ,anti int); ");
+        std::string sql(" create table new_table (column int primary,email string ,anti int); ");
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) antidb::Parser::parse_sql(stmt);
+        EXPECT_EQ(1, 1);
         c_stmt->schema_.toString();
     }
 }
