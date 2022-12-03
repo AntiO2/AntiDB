@@ -13,6 +13,7 @@
 
 namespace antidb {
     class Schema {
+
     public:
         Schema() = default;
 
@@ -39,8 +40,10 @@ namespace antidb {
             }
         }
 
-    private:
+        std::string table_name_;
         std::vector<Column> cols_;
+    private:
+
         uint32_t offset_{0};
         bool has_primary{false};
     };

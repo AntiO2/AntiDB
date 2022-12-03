@@ -11,20 +11,32 @@
 #include <fstream>
 #include "antidb/schema.h"
 #include "antidb/config.h"
-
+#include "antidb/tuple.h"
 namespace antidb {
     /**
      * 表类
      */
     class Table {
     public:
-        explicit Table(const std::string &table_name, Schema &schema);
+        explicit Table(const Schema &schema);
+
+        ~Table();
+
+        void WriteTuple(Tuple &tuple);
+
+        void ReadTuple(Tuple &tuple, tuple_id_t tupleId);
+
+        char *LocateTuple(const uint32_t &RID);//通过编号获取写入位置
+        void Debug_Info() const;
 
     private:
         Schema schema_;
         std::string table_name_;
-        char pages[ANTIDB_PAGE_SIZE * TABLE_MAX_PAGE];
+        void *pages[TABLE_MAX_PAGE]{};
         std::fstream page_io_;
+        uint32_t cnt_tuple_{0};
+        uint32_t tuple_per_page_;//每页存放tuple数目
+        uint32_t tuple_max_num_;//最多tuple数目
     };
 
 } // antidb

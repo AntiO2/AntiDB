@@ -32,7 +32,7 @@ namespace antidb {
                     break;
                 case USE:
                     std::string db_name = ((Use_Statement *) stmt_p)->db_name_;
-                    try { UseExecutor::UseDataBase(db_name, database_) }
+                    try { UseExecutor::UseDataBase(db_name, database_); }
                     catch (error_command &error_command_) {
                         error_command_.what();
                     }

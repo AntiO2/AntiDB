@@ -10,7 +10,7 @@
 
 namespace antidb {
     static constexpr int ANTIDB_PAGE_SIZE = 4096;
-    static constexpr int TABLE_MAX_PAGE = 1000;
+    static constexpr int TABLE_MAX_PAGE = 256;
     static constexpr int MAX_STRING_SIZE = 256;
     const std::string DATA_PATH = "./data/";
 
@@ -32,7 +32,7 @@ namespace antidb {
         STRING
     };
     using page_id_t = int32_t;
-
+    using tuple_id_t = uint32_t;
 
 }
 #endif //ANTIDB_CONFIG_H

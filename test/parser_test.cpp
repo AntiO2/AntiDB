@@ -65,4 +65,13 @@ namespace antidb {
         EXPECT_EQ(1, 1);
         c_stmt->schema_.toString();
     }
+
+    TEST(PARSER_TEST, CREATE_TABLE_2) {
+        std::string sql("create table anti_table(id int,age int,name string);");
+        auto stmt = Statement(sql);
+        auto c_stmt = (Create_Statement *) antidb::Parser::parse_sql(stmt);
+        EXPECT_EQ(1, 1);
+        c_stmt->schema_.toString();
+    }
+
 }

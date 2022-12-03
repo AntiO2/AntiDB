@@ -67,6 +67,7 @@ namespace antidb {
     auto Parser::parse_sql(Statement &statement) -> Statement * {
         get_rid_last_sem(statement.commandline_);
         get_token(statement.commandline_, statement.tokens);
+
         std::transform(statement.tokens[0].begin(),
                        statement.tokens[0].end(),
                        statement.tokens[0].begin(),
@@ -174,12 +175,18 @@ namespace antidb {
         if (command.empty()) {
             return;
         }
-        auto pos = command.end();
-        pos--;
-        while (pos != command.cbegin()) {
-            pos--;
-            if (*pos == ';') {
-                command = std::string(command.begin(), pos);
+//        auto pos = command.end();
+//        pos--;
+//        while (pos != command.cbegin()) {
+//            pos--;
+//            if (*pos == ';') {
+//                command = std::string(command.begin(), pos);
+//                return;
+//            }
+//        }
+        for (auto c = command.begin(); c != command.end(); c++) {
+            if (*c == ';') {
+                command = std::string(command.begin(), c);
                 return;
             }
         }
@@ -200,6 +207,7 @@ namespace antidb {
             }
             createStatement->name_ = createStatement->tokens[2];// table name
             createStatement->createType_ = CREATE_TABLE;
+            createStatement->schema_.table_name_ = createStatement->name_;
             /**
              * TODO(AntiO2) 分词器 加入括号解析
              * 解析列信息

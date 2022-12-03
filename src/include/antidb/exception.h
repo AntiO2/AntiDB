@@ -26,6 +26,11 @@ namespace antidb {
     public:
         explicit error_table(const std::string &error) : std::runtime_error(error) {}
     };
+
+    class error_database : public std::runtime_error { ;
+    public:
+        explicit error_database(const std::string &error) : std::runtime_error(error) {}
+    };
 }
 
 #endif //ANTIDB_EXCEPTION_H

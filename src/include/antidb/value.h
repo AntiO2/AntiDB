@@ -27,20 +27,26 @@ namespace antidb {
             typeId_ = typeId;
         }
 
+        /**
+         * FIXME(AntiO2) 名字为Write更合适
+         * 将当前value写入指定位置
+         * @param data
+         */
         void GetValue(char *data) {
+
             switch (typeId_) {
                 case INT: {
-                    memcpy(data, &value_, 4);
+                    memcpy(data, (unsigned char *) &value_, 4);
                     break;
                 }
                 case STRING:
-                    memcpy(data, value_.str_, MAX_STRING_SIZE);
-                    break;
 
+                    memcpy(data, (unsigned char *) &value_, MAX_STRING_SIZE);
+                    break;
             }
         }
 
-        uint32_t GetSize() {
+        [[nodiscard]] uint32_t GetSize() const {
             return value_size_;
         }
 
@@ -48,7 +54,7 @@ namespace antidb {
         union {
             int int32_;
             char str_[MAX_STRING_SIZE];
-        } value_;
+        } value_{};
         uint32_t value_size_;
         TYPE_ID typeId_;
     };

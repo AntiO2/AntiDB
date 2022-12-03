@@ -29,5 +29,6 @@ namespace antidb {
         UseExecutor::UseDataBase("anti_db", db_name);
         EXPECT_EQ(db_name, "anti_db");
     }
+
 }
 
