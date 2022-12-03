@@ -57,6 +57,14 @@ namespace antidb {
      */
     auto InsertExecutor::WriteTuple(Tuple &tuple, Table &table) {
         table.WriteTuple(tuple);
+        return;
+    }
+
+    auto SelectExecutor::ReadTuple(Table &t, const tuple_id_t tid) {
+        std::vector<Value> values;
+        auto tuple = new Tuple(t.)
+        t.ReadTuple(t, tid);
+
         return nullptr;
     }
 } // antidb

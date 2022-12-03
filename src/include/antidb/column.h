@@ -7,29 +7,31 @@
 #include <string>
 #include <iostream>
 #include "antidb/config.h"
-namespace antidb{
+namespace antidb {
+    /**
+     * FIXME(AntiO2) 为属性添加Getter和Setter
+     */
     class Column {
-    friend class Table;
+        friend class Table;
 
         friend class Schema;
+
     public:
         Column() = default;
-        Column(TYPE_ID type,std::string& col_name,bool is_primary)
-        {
-            type_=type;
-            col_name_=col_name;
+
+        Column(TYPE_ID type, std::string &col_name, bool is_primary) {
+            type_ = type;
+            col_name_ = col_name;
             is_primary_=is_primary;
-            if(type==INT)
-            {
+            if(type == INT) {
                 col_size_=4;
             }
-            if(type==STRING)
-            {
+            if(type == STRING) {
                 col_size_ = 256;
             }
         }
-        Column(TYPE_ID type,std::string& col_name)
-        {
+
+        Column(TYPE_ID type,std::string& col_name) {
             type_=type;
             col_name_=col_name;
         }
@@ -50,7 +52,7 @@ namespace antidb{
             return is_primary_;
         };
 
-        auto toString() -> void {
+        auto toString() const -> void {
             std::cout << col_name_ << " " << type_ << " " << is_primary_ << std::endl;
         }
 
@@ -60,7 +62,7 @@ namespace antidb{
         TYPE_ID type_;
         std::string col_name_;
         bool is_primary_{false};
-        uint32_t col_size_;
+        uint32_t col_size_{0};
     private:
 
     };

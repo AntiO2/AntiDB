@@ -38,6 +38,16 @@ namespace antidb {
         explicit Use_Statement(Statement &&stmt) : Statement(std::move(stmt)) {};
         std::string db_name_;
     };
+
+    /**
+     * TODO 生成
+     */
+    class Select_Statement : public Statement {
+    public:
+        explicit Select_Statement(Statement &&statement, Schema &&schema) : Statement(std::move(statement)),
+                                                                            schema_(schema) {};
+        Schema schema_;
+    };
 } // antidb
 
 

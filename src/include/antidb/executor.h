@@ -41,6 +41,12 @@ namespace antidb {
          */
         static auto WriteTuple(Tuple &tuple, Table &table);
     };
+
+    class SelectExecutor : AbstractExecutor {
+    public
+
+        static auto ReadTuple(Table &t, tuple_id_t tid);
+    };
 } // antidb
 
 #endif //ANTIDB_EXECUTOR_H

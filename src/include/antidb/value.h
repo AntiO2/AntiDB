@@ -51,15 +51,6 @@ namespace antidb {
             return value_size_;
         }
 
-        void show() {
-            switch (typeId_) {
-                case INT:
-                    std::cout << value_.int32_ + 1 << std::endl;
-                case STRING:
-                    std::cout << value_.str_ << std::endl;
-            }
-        }
-
         int GetInt() {
             return value_.int32_;
         }
@@ -68,11 +59,11 @@ namespace antidb {
             return value_.str_;
         }
 
-        uint32_t getValueSize() const {
+        [[nodiscard]] uint32_t getValueSize() const {
             return value_size_;
         }
 
-        TYPE_ID getTypeId() const {
+        [[nodiscard]] TYPE_ID getTypeId() const {
             return typeId_;
         }
 
