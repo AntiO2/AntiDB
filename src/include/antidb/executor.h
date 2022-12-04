@@ -11,7 +11,7 @@
 #include "antidb/table.h"
 #include "antidb/statement.h"
 #include "antidb/tuple.h"
-
+#include "antidb/database.h"
 namespace antidb {
 
     class AbstractExecutor {
@@ -23,12 +23,12 @@ namespace antidb {
 
         static auto CreateDataBase(const std::string &database_name) -> bool;
 
-        static auto CreateTable(const Create_Statement &createStatement, const std::string &db_name) -> void;
+        static auto CreateTable(const Create_Statement &createStatement, Database &database) -> Table *;
     };
 
     class UseExecutor : AbstractExecutor {
     public:
-        static auto UseDataBase(const std::string &database_name, std::string &server_db_name) -> void;
+        static auto UseDataBase(const std::string &database_name) -> std::unique_ptr<Database>;
     };
 
     class InsertExecutor : AbstractExecutor {
@@ -39,7 +39,9 @@ namespace antidb {
          * @param
          * @return
          */
-        static auto WriteTuple(Tuple &tuple, Table &table);
+        static auto WriteTuple(Tuple &tuple, Table &table) -> void;
+
+        static auto WriteTuple(Tuple &tuple, Table *table) -> void;
     };
 
     class SelectExecutor : AbstractExecutor {

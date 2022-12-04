@@ -12,7 +12,7 @@ namespace antidb {
      * 通过schema创建一个tuple
      * @param schema
      */
-    Table::Table(const Schema &schema) {
+    Table::Table(const Schema &schema, const std::string &dbname) {
         for (auto page: pages) {
             page = nullptr;
         }
@@ -20,12 +20,19 @@ namespace antidb {
         table_name_ = schema.table_name_;
         tuple_per_page_ = ANTIDB_PAGE_SIZE / schema.GetSize();
         tuple_max_num_ = tuple_per_page_ * TABLE_MAX_PAGE;
+        diskManager_ = new DiskManager(DATA_PATH + "/" + dbname + "/" + schema_.table_name_ + DATA_FORMAT);
     }
 
     Table::~Table() {
-        for (auto page: pages) {
-            free(page);
+        page_id_t pageId = 0;
+        for (; pageId < TABLE_MAX_PAGE; pageId++) {
+            if (pages[pageId] != nullptr) {
+                diskManager_->WritePage(pageId, (char *) pages[pageId]);
+                free(pages[pageId]);
+            }
         }
+        diskManager_->ShutDown();
+        delete diskManager_;
     }
 
     void Table::WriteTuple(Tuple &tuple) {
@@ -45,7 +52,7 @@ namespace antidb {
         auto page_id = RID / tuple_per_page_;
         if (pages[page_id] == nullptr) {
             pages[page_id] = malloc(ANTIDB_PAGE_SIZE);
-            memset(pages[page_id], 0, ANTIDB_PAGE_SIZE);
+            diskManager_->ReadPage(page_id, (char *) pages[page_id]);
         }
         if (pages[page_id] == nullptr) {
             throw error_table("Memory Over Flow!");
@@ -67,7 +74,7 @@ namespace antidb {
         return schema_;
     }
 
-    const std::string &Table::getTableName() const {
+    std::string Table::getTableName() const {
         return table_name_;
     }
 

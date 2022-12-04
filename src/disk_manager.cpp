@@ -80,7 +80,6 @@ namespace antidb {
                 file_io_.clear();
                 memset(page_data + read_count, 0, ANTIDB_PAGE_SIZE - read_count);
             }
-
         }
     }
 } // antidb

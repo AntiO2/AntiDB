@@ -30,13 +30,15 @@ namespace antidb {
                     break;
                 case DROP:
                     break;
-                case USE:
+                case USE: {
                     std::string db_name = ((Use_Statement *) stmt_p)->db_name_;
-                    try { UseExecutor::UseDataBase(db_name, database_); }
-                    catch (error_command &error_command_) {
-                        error_command_.what();
+                    try { db_used_ = UseExecutor::UseDataBase(db_name); }
+                    catch (std::exception &e) {
+                        e.what();
                     }
                     break;
+                }
+
             }
         }
     }

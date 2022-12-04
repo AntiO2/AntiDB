@@ -14,6 +14,7 @@ namespace antidb {
     static constexpr int MAX_STRING_SIZE = 256;
     const std::string DATA_PATH = "./data/";
     const std::string DB_INFO = "/information.db";
+    const std::string DATA_FORMAT = ".dat";
     enum SQL_type {
         INSERT,
         CREATE,

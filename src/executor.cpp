@@ -2,9 +2,11 @@
 // Created by Anti on 2022/11/29.
 //
 #include <filesystem>
+#include <memory>
 #include "antidb/executor.h"
 #include "antidb/exception.h"
 #include "antidb/table.h"
+
 namespace antidb {
     CreateExecutor::CreateExecutor(Create_Statement&createStatement) {
         if (createStatement.createType_ == CREATE_DATABASE) {
@@ -18,22 +20,18 @@ namespace antidb {
         if (database_name.empty()) {
             return false;
         }
-        return std::filesystem::create_directories(DATA_PATH + database_name);
+        if (std::filesystem::exists(DATA_PATH + database_name) && std::filesystem::exists(DATA_PATH + database_name)) {
+            throw error_command("DataBase " + database_name + " exists");
+        }
+        auto db = new Database(database_name);
+        delete db;
+        return true;
     }
 
-    auto CreateExecutor::CreateTable(const Create_Statement &createStatement, const std::string &db_name) -> void {
-        if (db_name.empty()) {
-            throw error_database("No database selected");
-        }
-        if (!(std::filesystem::exists(db_name) && std::filesystem::is_directory(db_name)))//检查是否存在数据库
-        {
-            throw error_database("No such database: " + db_name);
-        }
-        if (std::filesystem::exists(db_name + "/" + createStatement.name_ + ".dat")) {
-            throw error_table("Already exists table " + createStatement.name_);
-        }
-        auto t = new Table(createStatement.schema_);
-
+    auto CreateExecutor::CreateTable(const Create_Statement &createStatement, Database &database) -> Table * {
+        auto table = new Table(createStatement.schema_, database.getDbName());
+        database.addTable(table);
+        return table;
     }
 
     /**
@@ -41,12 +39,11 @@ namespace antidb {
      * @param database_name
      * @return
      */
-    auto UseExecutor::UseDataBase(const std::string &database_name, std::string &server_db_name) -> void {
+    auto UseExecutor::UseDataBase(const std::string &database_name) -> std::unique_ptr<Database> {
         if (!std::filesystem::exists(DATA_PATH + database_name)) {
             throw error_command("DataBase \"" + database_name + "\" doesn't exist!!!");
-            return;
         }
-        server_db_name = database_name;
+        return std::make_unique<Database>(database_name);
     }
 
     /**
@@ -55,9 +52,12 @@ namespace antidb {
      * @param dst
      * @return
      */
-    auto InsertExecutor::WriteTuple(Tuple &tuple, Table &table) {
+    auto InsertExecutor::WriteTuple(Tuple &tuple, Table &table) -> void {
         table.WriteTuple(tuple);
-        return;
+    }
+
+    auto InsertExecutor::WriteTuple(Tuple &tuple, Table *table) -> void {
+        table->WriteTuple(tuple);
     }
 
     auto SelectExecutor::ReadTuple(Table &t, const tuple_id_t tid) {

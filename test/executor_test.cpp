@@ -18,17 +18,23 @@ namespace antidb {
         EXPECT_EQ(CreateExecutor::CreateDataBase(create->name_), true);
     }
 
-    TEST(EXCUTION, SWITCH_DATABASE) {
+    TEST(EXCUTION, DISABLED_SWITCH_DATABASE) {
         /**
          * 这里测试是会有副作用的，记得删除新建的文件夹
          */
-        std::string db_name;
-        EXPECT_THROW(UseExecutor::UseDataBase("anti_db", db_name), error_command);
-        EXPECT_EQ(CreateExecutor::CreateDataBase("anti_db"), true);
-        EXPECT_EQ(CreateExecutor::CreateDataBase("anti_db"), false);
-        UseExecutor::UseDataBase("anti_db", db_name);
-        EXPECT_EQ(db_name, "anti_db");
+//        std::string db_name;
+//        EXPECT_THROW(UseExecutor::UseDataBase("anti_db", db_name), error_command);
+//        EXPECT_EQ(CreateExecutor::CreateDataBase("anti_db"), true);
+//        EXPECT_EQ(CreateExecutor::CreateDataBase("anti_db"), false);
+//        UseExecutor::UseDataBase("anti_db", db_name);
+//        EXPECT_EQ(db_name, "anti_db");
     }
 
+    TEST(CREATE_EXCUTION, CREATE_DATABASE_2) {
+        EXPECT_EQ(CreateExecutor::CreateDataBase("AntiO2"), true);
+        EXPECT_ANY_THROW(CreateExecutor::CreateDataBase("AntiO2"););
+        auto db = UseExecutor::UseDataBase("AntiO2");
+        EXPECT_EQ(db->getDbName(), "AntiO2");
+    }
 }
 

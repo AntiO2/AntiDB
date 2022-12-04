@@ -12,13 +12,16 @@
 #include "antidb/schema.h"
 #include "antidb/config.h"
 #include "antidb/tuple.h"
+#include "antidb/disk_manager.h"
 namespace antidb {
     /**
      * 表类
      */
     class Table {
     public:
-        explicit Table(const Schema &schema);
+        Table() = default;
+
+        explicit Table(const Schema &schema, const std::string &dbname);
 
         ~Table();
 
@@ -37,22 +40,22 @@ namespace antidb {
 
         char *LocateTuple(const uint32_t &RID);
 
-        const Schema &getSchema() const;
+        [[nodiscard]] const Schema &getSchema() const;
 
-        const std::string &getTableName() const;
+        [[nodiscard]] std::string getTableName() const;
 
-        uint32_t getCntTuple() const;
+        [[nodiscard]] uint32_t getCntTuple() const;
 
-        uint32_t getTuplePerPage() const;
+        [[nodiscard]] uint32_t getTuplePerPage() const;
 
-        uint32_t getTupleMaxNum() const;
-//通过编号获取写入位置
+        [[nodiscard]] uint32_t getTupleMaxNum() const;
 
 
     private:
         Schema schema_;
         std::string table_name_;
         void *pages[TABLE_MAX_PAGE]{};
+        DiskManager *diskManager_;
         uint32_t cnt_tuple_{0};
         uint32_t tuple_per_page_;//每页存放tuple数目
         uint32_t tuple_max_num_;//最多tuple数目
