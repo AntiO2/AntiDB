@@ -10,7 +10,7 @@
 #include "antidb/parser.h"
 #include "antidb/statement.h"
 #include "string"
-
+#include "antidb/database.h"
 namespace antidb {
     using std::cout;
     using std::endl;
@@ -28,7 +28,7 @@ namespace antidb {
         EXPECT_EQ(str_, "AntiO2");
     }
 
-    TEST(STORAGE_TEST, PAGE_RW) {
+    TEST(STORAGE_TEST, DISABLED_PAGE_RW) {
         std::string sql = "create table anti_table(id int,age int,name string);";
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
@@ -54,4 +54,10 @@ namespace antidb {
             std::cout << strlen(vs[2].GetSTRING()) << " " << vs[2].GetSTRING() << std::endl;
         }
     }
+
+    TEST(STORAGE_TEST, DATABASE) {
+        Database db1("antio2");
+        Database db2("antio2");
+    }
+
 }

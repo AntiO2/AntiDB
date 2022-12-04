@@ -63,7 +63,6 @@ namespace antidb {
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) antidb::Parser::parse_sql(stmt);
         EXPECT_EQ(1, 1);
-        c_stmt->schema_.toString();
     }
 
     TEST(PARSER_TEST, CREATE_TABLE_2) {
@@ -71,7 +70,6 @@ namespace antidb {
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) antidb::Parser::parse_sql(stmt);
         EXPECT_EQ(1, 1);
-        c_stmt->schema_.toString();
     }
 
 }

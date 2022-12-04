@@ -43,7 +43,7 @@ namespace antidb {
     };
 
     class SelectExecutor : AbstractExecutor {
-    public
+    public:
 
         static auto ReadTuple(Table &t, tuple_id_t tid);
     };

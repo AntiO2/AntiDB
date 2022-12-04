@@ -7,6 +7,7 @@
 | 构建工具 | cmake version 3.24.3<br/>GNU Make 4.2.1 |
 |  编译器  |         gcc version 9.2.0 (GCC)         |
 | 版本控制 |      git version 2.34.1.windows.1       |
+| 系统版本| Win11|
 
 ## 构建方式
 

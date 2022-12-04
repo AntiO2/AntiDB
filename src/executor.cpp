@@ -62,9 +62,8 @@ namespace antidb {
 
     auto SelectExecutor::ReadTuple(Table &t, const tuple_id_t tid) {
         std::vector<Value> values;
-        auto tuple = new Tuple(t.)
-        t.ReadTuple(t, tid);
-
-        return nullptr;
+        Tuple tuple(t.getSchema().GetSize());
+        t.ReadTuple(tuple, tid);
+        return tuple;
     }
 } // antidb

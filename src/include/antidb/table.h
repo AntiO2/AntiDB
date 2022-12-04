@@ -35,7 +35,18 @@ namespace antidb {
          */
         void ReadTuple(Tuple &tuple, tuple_id_t tupleId);
 
-        char *LocateTuple(const uint32_t &RID);//通过编号获取写入位置
+        char *LocateTuple(const uint32_t &RID);
+
+        const Schema &getSchema() const;
+
+        const std::string &getTableName() const;
+
+        uint32_t getCntTuple() const;
+
+        uint32_t getTuplePerPage() const;
+
+        uint32_t getTupleMaxNum() const;
+//通过编号获取写入位置
 
 
     private:

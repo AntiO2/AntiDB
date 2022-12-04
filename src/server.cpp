@@ -36,7 +36,6 @@ namespace antidb {
                     catch (error_command &error_command_) {
                         error_command_.what();
                     }
-
                     break;
             }
         }

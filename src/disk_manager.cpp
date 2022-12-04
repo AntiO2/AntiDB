@@ -10,6 +10,10 @@
 namespace antidb {
     static char *buffer_used;
 
+    /**
+     * 打开指定的文件名字
+     * @param file_name
+     */
     DiskManager::DiskManager(const std::string &file_name) : file_name_(file_name) {
         auto dot = file_name.rfind('.');
         if (dot == std::string::npos) {
@@ -26,6 +30,11 @@ namespace antidb {
         buffer_used = nullptr;
     }
 
+    /**
+     * 将指定的page_id,写入磁盘中
+     * @param page_id
+     * @param page_data
+     */
     void DiskManager::WritePage(page_id_t page_id, const char *page_data) {
         int offset = page_id * ANTIDB_PAGE_SIZE;
         file_io_.seekp(offset).write(page_data, ANTIDB_PAGE_SIZE);
@@ -36,6 +45,11 @@ namespace antidb {
         file_io_.flush();
     }
 
+    /**
+     * 获得文件大小
+     * @param file_name
+     * @return
+     */
     auto DiskManager::GetFileSize(const std::string &file_name) -> int {
         struct stat stat_buf{};
         int rc = stat(file_name.c_str(), &stat_buf);//通过文件名获取信息
@@ -46,6 +60,11 @@ namespace antidb {
         file_io_.close();
     }
 
+    /**
+     * 从文件中读入指定的页
+     * @param page_id
+     * @param page_data
+     */
     void DiskManager::ReadPage(page_id_t page_id, char *page_data) {
         int offset = page_id * ANTIDB_PAGE_SIZE;
         if (offset > GetFileSize(file_name_)) {

@@ -34,9 +34,21 @@ namespace antidb {
             has_primary = is_primary;
         }
 
-        auto toString() -> void {
-            for (auto col: cols_) {
-                col.toString();
+        friend std::ostream &operator<<(std::ostream &os, const Schema &schema) {
+            os << schema.table_name_ << " " << schema.offset_ << " "
+               << schema.has_primary << std::endl;
+            for (const auto &col: schema.cols_) {
+                os << col << std::endl;
+            }
+            return os;
+        }
+
+        friend std::ifstream &operator>>(std::ifstream &ifs, Schema &schema) {
+            ifs >> schema.table_name_ >> schema.offset_ >> schema.has_primary;
+            while (!ifs.eof()) {
+                Column col;
+                ifs >> col;
+                schema.cols_.emplace_back(col);
             }
         }
 

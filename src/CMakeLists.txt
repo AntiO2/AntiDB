@@ -4,13 +4,15 @@ add_library(parser
 add_library(storage
         STATIC
         disk_manager.cpp
-        table.cpp)
+        table.cpp
+        database.cpp)
 add_library(executor
         STATIC
         executor.cpp)
 add_library(server
         STATIC
-        server.cpp)
+        server.cpp
+        database.cpp)
 target_link_libraries(
         server
         parser

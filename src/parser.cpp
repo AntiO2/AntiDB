@@ -83,7 +83,6 @@ namespace antidb {
         }
         if (first_token == "create") {
             statement.sqlType_ = CREATE;
-            //return parse_create(statement);
             auto res = parse_create(statement);
             return res;
         }
