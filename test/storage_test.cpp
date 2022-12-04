@@ -86,6 +86,7 @@ namespace antidb {
          */
         table->WriteTuple(tuple);
         InsertExecutor::WriteTuple(tuple, table);
+        delete table;
     }
 
 }

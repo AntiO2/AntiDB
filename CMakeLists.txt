@@ -1,3 +1,4 @@
+set(CMAKE_CXX_COMPILER "g++")
 project(AntiDB
         LANGUAGES CXX
         )
