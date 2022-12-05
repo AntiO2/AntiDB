@@ -8,7 +8,6 @@
 #include "antidb/exception.h"
 
 namespace antidb {
-    static char *buffer_used;
 
     /**
      * 打开指定的文件名字
@@ -27,7 +26,6 @@ namespace antidb {
                 throw error_file("Can't Open DataBase File");
             }
         }
-        buffer_used = nullptr;
     }
 
     /**
@@ -40,7 +38,6 @@ namespace antidb {
         file_io_.seekp(offset).write(page_data, ANTIDB_PAGE_SIZE);
         if (file_io_.bad()) {
             throw error_file("Error while writing");
-            return;
         }
         file_io_.flush();
     }

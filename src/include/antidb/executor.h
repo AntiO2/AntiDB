@@ -28,7 +28,7 @@ namespace antidb {
 
     class UseExecutor : AbstractExecutor {
     public:
-        static auto UseDataBase(const std::string &database_name) -> std::unique_ptr<Database>;
+        [[nodiscard]]static auto UseDataBase(const std::string &database_name) -> std::unique_ptr<Database>;
     };
 
     class InsertExecutor : AbstractExecutor {
@@ -48,6 +48,17 @@ namespace antidb {
     public:
 
         static auto ReadTuple(Table &t, tuple_id_t tid);
+    };
+
+    class DropExecutor : AbstractExecutor {
+    public:
+        static auto DropTable(const std::string &table_name, std::unique_ptr<Database> *db) -> void;
+
+        /**
+         * TODO(AntiO2) 记得不允许删除正在使用的db
+         * @param db_name
+         */
+        static auto DropDatabase(const std::string &db_name) -> void;
     };
 } // antidb
 

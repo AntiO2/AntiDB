@@ -61,7 +61,7 @@ namespace antidb {
         Database db2("antio2");
     }
 
-    TEST(STORAGE_TEST, PAGE_DISK) {
+    TEST(STORAGE_TEST, DISABLED_PAGE_DISK) {
         Database db1("AntiO2");
         /**
          * 创建表
@@ -86,7 +86,9 @@ namespace antidb {
          */
         table->WriteTuple(tuple);
         InsertExecutor::WriteTuple(tuple, table);
-        delete table;
     }
 
+    TEST(STORAGE_TEST, RECORY_DISK) {
+        auto db = UseExecutor::UseDataBase("AntiO2");
+    }
 }

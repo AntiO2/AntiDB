@@ -9,6 +9,7 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <set>
 #include "antidb/schema.h"
 #include "antidb/config.h"
 #include "antidb/tuple.h"
@@ -50,15 +51,24 @@ namespace antidb {
 
         [[nodiscard]] uint32_t getTupleMaxNum() const;
 
+        void addSpareTID(tuple_id_t tid);
 
-    private:
+        tuple_id_t Pop_TID();
+
+        friend std::ostream &operator<<(std::ostream &os, const Table &table);
+
+        friend std::istream &operator>>(std::istream &is, Table &table);
+
         Schema schema_;
+        uint32_t cnt_tuple_{0};
+    private:
         std::string table_name_;
         void *pages[TABLE_MAX_PAGE]{};
         DiskManager *diskManager_;
-        uint32_t cnt_tuple_{0};
         uint32_t tuple_per_page_;//每页存放tuple数目
         uint32_t tuple_max_num_;//最多tuple数目
+        std::vector<tuple_id_t> spare_tuple_;
+        std::string db_name_;
     };
 
 } // antidb

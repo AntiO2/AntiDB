@@ -10,16 +10,18 @@
 namespace antidb {
     /**
      * 通过schema创建一个tuple
+     * 这个也可以通过dat文件创建
      * @param schema
      */
     Table::Table(const Schema &schema, const std::string &dbname) {
-        for (auto page: pages) {
+        for (auto &page: pages) {
             page = nullptr;
         }
         schema_ = schema;
         table_name_ = schema.table_name_;
         tuple_per_page_ = ANTIDB_PAGE_SIZE / schema.GetSize();
         tuple_max_num_ = tuple_per_page_ * TABLE_MAX_PAGE;
+        db_name_ = dbname;
         diskManager_ = new DiskManager(DATA_PATH + "/" + dbname + "/" + schema_.table_name_ + DATA_FORMAT);
     }
 
@@ -31,18 +33,32 @@ namespace antidb {
                 free(pages[pageId]);
             }
         }
+        std::ofstream ofs;
+        ofs.open(DATA_PATH + "/" + db_name_ + "/" + schema_.table_name_ + INFO_FORMAT, std::ios::app);
+        ofs << std::endl;
+        for (auto tid: spare_tuple_) {
+            ofs << tid << " ";
+        }
+        ofs.close();
         diskManager_->ShutDown();
         delete diskManager_;
+
     }
 
     void Table::WriteTuple(Tuple &tuple) {
-        if (cnt_tuple_ >= tuple_max_num_) {
-            throw error_table("AntiDB:Table Overflow");
+        char *dst = nullptr;
+        if (spare_tuple_.empty()) {
+            if (cnt_tuple_ >= tuple_max_num_) {
+                throw error_table("AntiDB:Table Overflow");
+            } else {
+                dst = LocateTuple(cnt_tuple_);
+                cnt_tuple_++;
+            }
+        } else {
+            auto tid = Pop_TID();
+            dst = LocateTuple(tid);
         }
-        auto dst = LocateTuple(cnt_tuple_);
         tuple.write(dst);
-        cnt_tuple_++;
-
     }
 
     char *Table::LocateTuple(const uint32_t &RID) {
@@ -90,4 +106,27 @@ namespace antidb {
         return tuple_max_num_;
     }
 
+    std::ostream &operator<<(std::ostream &os, const Table &table) {
+        os << table.schema_;
+        return os;
+    }
+
+    std::istream &operator>>(std::istream &is, Table &table) {
+        return is;
+    }
+
+    void Table::addSpareTID(tuple_id_t tid) {
+        spare_tuple_.push_back(tid);
+    }
+
+    tuple_id_t Table::Pop_TID() {
+        tuple_id_t tid = spare_tuple_.front();
+        spare_tuple_.erase(spare_tuple_.begin());
+        return tid;
+    }
+
+    std::ifstream &operator>>(std::ifstream &is, Table &table) {
+        is >> table.schema_;
+        return is;
+    }
 } // antidb

@@ -39,6 +39,13 @@ namespace antidb {
         std::string db_name_;
     };
 
+    class Drop_Statement : public Statement {
+    public:
+        explicit Drop_Statement(Statement &&stmt) : Statement(std::move(stmt)) {};
+        std::string name_;
+        DROP_TYPE dropType_{DROP_DATABASE};
+    };
+
     /**
      * TODO 生成
      */

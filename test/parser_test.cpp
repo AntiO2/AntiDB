@@ -72,4 +72,19 @@ namespace antidb {
         EXPECT_EQ(1, 1);
     }
 
+    TEST(PARSER_TEST, DROP) {
+        std::string sql("drop database antio2");
+        auto stmt = Statement(sql);
+        auto d_stmt = (Drop_Statement *) Parser::parse_sql(stmt);
+        EXPECT_EQ(d_stmt->name_, "antio2");
+        EXPECT_EQ(d_stmt->dropType_, DROP_DATABASE);
+    }
+
+    TEST(PARSER_TEST, DROP_TABLE) {
+        std::string sql("drop table antio2");
+        auto stmt = Statement(sql);
+        auto d_stmt = (Drop_Statement *) Parser::parse_sql(stmt);
+        EXPECT_EQ(d_stmt->name_, "antio2");
+        EXPECT_EQ(d_stmt->dropType_, DROP_TABLE);
+    }
 }

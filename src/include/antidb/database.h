@@ -36,7 +36,13 @@ namespace antidb {
 
         void addTable(Table *table);
 
+        void removeTable(const std::string &table_name);
+
+        void recover();
+
         friend std::ostream &operator<<(std::ostream &os, const Database &database);
+
+        auto getTable(const std::string &table) -> Table *;
 
     private:
         std::string db_name_;

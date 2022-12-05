@@ -50,6 +50,7 @@ namespace antidb {
                 ifs >> col;
                 schema.cols_.emplace_back(col);
             }
+            return ifs;
         }
 
         std::string table_name_;

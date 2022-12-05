@@ -311,12 +311,24 @@ namespace antidb {
         return nullptr;
     }
 
-    auto Parser::parse_drop(Statement &statement) -> Statement * {
-        return nullptr;
+    auto Parser::parse_drop(Statement &statement) -> Drop_Statement * {
+        if (statement.tokens.size() != 3) {
+            throw error_command("Arguments number isn't correct: " + statement.commandline_);
+        }
+        auto d_stmt = new Drop_Statement(std::move(statement));
+        if (d_stmt->tokens[1] == "database") {
+            d_stmt->dropType_ = DROP_DATABASE;
+        } else if (d_stmt->tokens[1] == "table") {
+            d_stmt->dropType_ = DROP_TABLE;
+        } else {
+            throw error_command("Can't find drop type: " + d_stmt->commandline_);
+        }
+        d_stmt->name_ = d_stmt->tokens[2];
+        return d_stmt;
     }
 
     auto Parser::is_token(char &c) -> bool {
-        for (auto token: TOKEN) {
+        for (const auto &token: TOKEN) {
             if (c == token) {
                 return true;
             }

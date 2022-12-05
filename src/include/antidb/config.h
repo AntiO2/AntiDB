@@ -15,6 +15,7 @@ namespace antidb {
     const std::string DATA_PATH = "./data/";
     const std::string DB_INFO = "/information.db";
     const std::string DATA_FORMAT = ".dat";
+    const std::string INFO_FORMAT = ".info";
     enum SQL_type {
         INSERT,
         CREATE,
@@ -31,6 +32,10 @@ namespace antidb {
     enum TYPE_ID {
         INT,
         STRING
+    };
+    enum DROP_TYPE {
+        DROP_TABLE,
+        DROP_DATABASE
     };
     using page_id_t = int32_t;
     using tuple_id_t = uint32_t;

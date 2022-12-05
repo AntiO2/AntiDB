@@ -8,7 +8,11 @@
 #include "antidb/table.h"
 
 namespace antidb {
-    CreateExecutor::CreateExecutor(Create_Statement&createStatement) {
+    /**
+     * 已弃用
+     * @param createStatement
+     */
+    CreateExecutor::CreateExecutor(Create_Statement &createStatement) {
         if (createStatement.createType_ == CREATE_DATABASE) {
             if (!CreateDataBase(createStatement.name_)) {
                 throw error_command("DataBase " + createStatement.name_ + " already exists");
@@ -30,7 +34,28 @@ namespace antidb {
 
     auto CreateExecutor::CreateTable(const Create_Statement &createStatement, Database &database) -> Table * {
         auto table = new Table(createStatement.schema_, database.getDbName());
-        database.addTable(table);
+        try {
+            database.addTable(table);
+        }
+            /**
+             * 如果重名，则抛出
+             */
+        catch (error_table &e) {
+            delete table;
+            throw e;
+        }
+        /**
+         * create table 还需要记录元信息
+         */
+        std::fstream fsm;
+        fsm.open(DATA_PATH + database.getDbName() + "/" + createStatement.schema_.table_name_ + ".info",
+                 std::ios::trunc | std::ios::out);
+        if (!fsm.is_open()) {
+            throw error_file("Cant open information file : " + createStatement.schema_.table_name_ + ".info");
+        }
+        fsm << createStatement.schema_;
+        fsm.flush();
+        fsm.close();
         return table;
     }
 
@@ -43,7 +68,9 @@ namespace antidb {
         if (!std::filesystem::exists(DATA_PATH + database_name)) {
             throw error_command("DataBase \"" + database_name + "\" doesn't exist!!!");
         }
-        return std::make_unique<Database>(database_name);
+        auto db = std::make_unique<Database>(database_name);
+        db->recover();
+        return db;
     }
 
     /**
@@ -65,5 +92,17 @@ namespace antidb {
         Tuple tuple(t.getSchema().GetSize());
         t.ReadTuple(tuple, tid);
         return tuple;
+    }
+
+
+    auto DropExecutor::DropTable(const std::string &table_name, std::unique_ptr<Database> *db) -> void {
+        if (db == nullptr) {
+            throw error_database("No database selected");
+        }
+        db->get()->removeTable(table_name);
+    }
+
+    auto DropExecutor::DropDatabase(const std::string &db_name) -> void {
+        std::filesystem::remove_all(DATA_PATH + db_name);
     }
 } // antidb

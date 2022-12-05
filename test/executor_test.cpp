@@ -30,11 +30,23 @@ namespace antidb {
 //        EXPECT_EQ(db_name, "anti_db");
     }
 
-    TEST(CREATE_EXCUTION, CREATE_DATABASE_2) {
+    TEST(CREATE_EXCUTION, DISABLED_CREATE_DATABASE_2) {
         EXPECT_EQ(CreateExecutor::CreateDataBase("AntiO2"), true);
         EXPECT_ANY_THROW(CreateExecutor::CreateDataBase("AntiO2"););
         auto db = UseExecutor::UseDataBase("AntiO2");
         EXPECT_EQ(db->getDbName(), "AntiO2");
+    }
+
+    TEST(CREATE_DROP, CD) {
+        EXPECT_EQ(CreateExecutor::CreateDataBase("AntiO2"), true);
+        auto db = UseExecutor::UseDataBase("AntiO2");
+        std::string sql = "create table anti_table(id int,age int,name string);";
+        auto stmt = Statement(sql);
+        auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
+        CreateExecutor::CreateTable(*c_stmt, *db);
+        DropExecutor::DropTable("anti_table", &db);
+        db = nullptr;
+        DropExecutor::DropDatabase("AntiO2");
     }
 }
 

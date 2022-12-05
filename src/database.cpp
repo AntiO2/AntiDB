@@ -19,6 +19,9 @@ namespace antidb {
             std::string table_name;
             while (!db_stream_.eof()) {
                 db_stream_ >> table_name;
+                if (table_name.empty()) {
+                    break;
+                }
                 table_set_.insert(table_name);
             }
         } else {
@@ -41,6 +44,15 @@ namespace antidb {
     }
 
     Database::~Database() {
+        for (auto &m: table_map_) {
+            delete m.second;
+            m.second = nullptr;
+        }
+        db_stream_.close();
+        db_stream_.open(DATA_PATH + db_name_ + DB_INFO, std::ios::trunc | std::ios::out);//重新输出表名
+        for (const auto &it: table_set_) {
+            db_stream_ << it << std::endl;
+        }
         db_stream_.close();
         table_set_.clear();
     }
@@ -62,5 +74,45 @@ namespace antidb {
     std::ostream &operator<<(std::ostream &os, const Database &database) {
         os << "db_name_: " << database.db_name_ << " is_used_: " << database.is_used_;
         return os;
+    }
+
+    auto Database::getTable(const std::string &table) -> Table * {
+        auto it = table_map_.find(table);
+        if (it == table_map_.end()) {
+            return nullptr;
+        }
+        return it->second;
+    }
+
+    void Database::recover() {
+        std::string Database_path = DATA_PATH + db_name_ + "/";
+        for (const auto &table_info: table_set_) {
+            /**
+             * 通过读取schema信息，获取table
+             */
+            std::ifstream ifs;
+            ifs.open(Database_path.append(table_info + INFO_FORMAT));
+            Schema schema;
+            ifs >> schema;
+            auto table = new Table(schema, db_name_);
+            uint32_t tid;
+            while (!ifs.eof()) {
+                ifs >> tid;
+                table->addSpareTID(tid);
+            }
+            table_map_.insert(std::make_pair(table_info, table));
+        }
+    }
+
+    void Database::removeTable(const std::string &table_name) {
+        if (!find(table_name)) {
+            throw error_table("No Table: " + table_name + " in database:" + db_name_);
+        }
+        table_set_.erase(table_name);
+        auto it = table_map_.find(table_name);
+        delete it->second;
+        table_map_.erase(it);
+        std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + INFO_FORMAT);
+        std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + DATA_FORMAT);
     }
 } // antidb

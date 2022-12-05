@@ -13,7 +13,6 @@ namespace antidb {
     public:
         Server() = default;
 
-        std::unique_ptr<Database> db_used_;//现在使用的db
         void OpenServer();
     };
 
