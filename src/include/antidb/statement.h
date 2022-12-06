@@ -11,7 +11,7 @@
 
 #include "antidb/config.h"
 #include "antidb/schema.h"
-
+#include "antidb/condition.h"
 namespace antidb {
     /**
      * 这是一个抽象的声明，用于获取token
@@ -51,9 +51,22 @@ namespace antidb {
      */
     class Select_Statement : public Statement {
     public:
-        explicit Select_Statement(Statement &&statement, Schema &&schema) : Statement(std::move(statement)),
-                                                                            schema_(schema) {};
-        Schema schema_;
+        explicit Select_Statement(Statement &&statement) : Statement(std::move(statement)) {};
+        std::string table_name_;
+        /**
+         * 选择的列名
+         */
+        std::string col_name_;
+        bool select_all_{false};
+        bool has_condition{false};
+        Condition condition;
+    };
+
+    class Insert_Statement : public Statement {
+    public:
+        explicit Insert_Statement(Statement &&statement) : Statement(std::move(statement)) {};
+        std::string table_name_;
+        std::vector<std::string> value_str;
     };
 } // antidb
 

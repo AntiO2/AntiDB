@@ -8,20 +8,22 @@
 #include <memory>
 #include <charconv>
 #include <ostream>
+#include <cstring>
 #include "antidb/config.h"
-
+#include "antidb/exception.h"
 namespace antidb {
     class Value {
 
 
     public:
+        Value() = default;
         Value(TYPE_ID typeId, int value) {
             value_.int32_ = value;
             value_size_ = 4;
             typeId_ = typeId;
         }
 
-        Value(TYPE_ID typeId, char *str, size_t len) {
+        Value(TYPE_ID typeId, const char *str, size_t len) {
             memcpy(value_.str_, str, len);
             //TODO(ANTIO2) 检查是否需要加'\0'
             value_size_ = MAX_STRING_SIZE;
@@ -51,11 +53,11 @@ namespace antidb {
             return value_size_;
         }
 
-        int GetInt() {
+        [[nodiscard]] int GetInt() const {
             return value_.int32_;
         }
 
-        auto GetSTRING() {
+        char *GetSTRING() {
             return value_.str_;
         }
 
@@ -65,6 +67,66 @@ namespace antidb {
 
         [[nodiscard]] TYPE_ID getTypeId() const {
             return typeId_;
+        }
+
+        bool operator<(const Value &v2) const {
+
+            if (typeId_ != v2.typeId_) {
+                throw error_type("Can't compare");
+            }
+            switch (typeId_) {
+                case INT:
+                    return value_.int32_ < v2.GetInt();
+                case STRING: {
+                    throw error_type("Can't compare string");
+                }
+            }
+        }
+
+        bool operator>(const Value &v2) {
+
+            if (typeId_ != v2.typeId_) {
+                throw error_type("Can't compare");
+            }
+            switch (typeId_) {
+                case INT:
+                    return value_.int32_ > v2.GetInt();
+                case STRING: {
+                    throw error_type("Can't compare string");
+                }
+            }
+        }
+
+        bool operator==(const Value &v2) {
+
+            if (typeId_ != v2.typeId_) {
+                throw error_type("Can't compare");
+            }
+            switch (typeId_) {
+                case INT:
+                    return value_.int32_ == v2.GetInt();
+                case STRING: {
+                    throw error_type("Can't compare string");
+                }
+            }
+        }
+
+        bool operator==(const Value &v2) const {
+
+            if (typeId_ != v2.typeId_) {
+                throw error_type("Can't compare");
+            }
+            switch (typeId_) {
+                case INT:
+                    return value_.int32_ == v2.GetInt();
+                case STRING: {
+                    throw error_type("Can't compare string");
+                }
+            }
+        }
+
+        explicit operator bool() const {
+            return strcmp(value_.str_, "");
         }
 
     private:

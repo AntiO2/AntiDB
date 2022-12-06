@@ -16,7 +16,10 @@ namespace antidb {
             ',',
             '(',
             ')',
-            ';'
+            ';',
+            '>',
+            '<',
+            '='
     };
     char SPACE[] = {
             '\r',
@@ -117,16 +120,6 @@ namespace antidb {
             return;
         }
         command += " ";
-//        auto pos = command.find(' ');
-//        decltype(pos) start = 0;
-//        while (pos != std::string::npos) {
-//            auto token = command.substr(start, pos - start);
-//            if (!token.empty()) {
-//                tokens.emplace_back(token);
-//            }
-//            start = pos + 1;
-//            pos = command.find(' ', start);
-//        }
         /**
          * 扫描一遍，获取token，如果是空格 跳过，单词或者指定标志符则加入tokens
          *
@@ -174,15 +167,6 @@ namespace antidb {
         if (command.empty()) {
             return;
         }
-//        auto pos = command.end();
-//        pos--;
-//        while (pos != command.cbegin()) {
-//            pos--;
-//            if (*pos == ';') {
-//                command = std::string(command.begin(), pos);
-//                return;
-//            }
-//        }
         for (auto c = command.begin(); c != command.end(); c++) {
             if (*c == ';') {
                 command = std::string(command.begin(), c);
@@ -263,7 +247,6 @@ namespace antidb {
                             if (createStatement->schema_.Has_Primary()) {
                                 throw error_command("Two Primary Keys? It is not allowed by AntiDB");
                             }
-                            createStatement->schema_.Set_Primary(true);
                             new_col.is_primary_ = true;
                             break;
                         }
@@ -284,12 +267,68 @@ namespace antidb {
         return nullptr;
     }
 
-    auto Parser::parse_insert(Statement &statement) -> Statement * {
-        return nullptr;
+    /**
+     * FIXME(AntiO2)这里会出现一个问题，就是因为分词去掉了空格，string会丢失空格
+     * 解决：直接解析字符串
+     * @param statement
+     * @return
+     *
+     */
+    auto Parser::parse_insert(Statement &statement) -> Insert_Statement * {
+        auto i_stmt = new Insert_Statement(std::move(statement));
+        auto token = i_stmt->tokens;
+        if (i_stmt->tokens.size() < 5) {
+            throw error_command("Check the command: " + i_stmt->commandline_);
+        }
+        i_stmt->table_name_ = i_stmt->tokens[2];
+        if (i_stmt->tokens[3] != "values") {
+            throw error_command("Check the command: " + i_stmt->commandline_);
+        }
+        if (token[4] != "(") {
+            throw error_command("Check the command: " + i_stmt->commandline_);
+        }
+        if (token[token.size() - 1] != ")") {
+            throw error_command("Check the command: " + i_stmt->commandline_);
+        }
+        auto l_pos = i_stmt->commandline_.find('(');
+        auto r_pos = i_stmt->commandline_.rfind(')');
+        auto value_str = i_stmt->commandline_.substr(l_pos + 1, r_pos - l_pos - 1);
+        spilt(value_str, i_stmt->value_str);
+        return i_stmt;
     }
 
-    auto Parser::parse_select(Statement &statement) -> Statement * {
-        return nullptr;
+    auto Parser::parse_select(Statement &statement) -> Select_Statement * {
+        auto s_stmt = new Select_Statement(std::move(statement));
+        auto tokens = s_stmt->tokens;
+        if (tokens.size() < 4) {
+            throw error_command("Command isn't correct: " + s_stmt->commandline_);
+        }
+        if (tokens[2] != "from") {
+            throw error_command("Command isn't correct,require from: " + s_stmt->commandline_);
+        }
+        auto table_name = tokens[3];
+        s_stmt->table_name_ = table_name;
+        if (tokens[1] == "*") {
+            s_stmt->select_all_ = true;
+        } else {
+            s_stmt->col_name_ = tokens[1];
+        }
+        /**
+         * 判断条件
+         */
+        if (tokens.size() > 4 && tokens[4] == "where") {
+            if (tokens.size() != 8) {
+                throw error_command("Error when parse condition: " + s_stmt->commandline_);
+            }
+            s_stmt->has_condition = true;
+            /**
+             * FIXME 会有bug
+             * 比如token[6]为 >anti
+             * 解决：判断符号加入空格
+             */
+            s_stmt->condition = Condition(tokens[5], tokens[6][0], tokens[7]);
+        }
+        return s_stmt;
     }
 
     auto Parser::parse_use(Statement &statement) -> Use_Statement * {
@@ -343,6 +382,55 @@ namespace antidb {
             }
         }
         return false;
+    }
+
+    auto Parser::spilt(std::string command, std::vector<std::string> &values) -> void {
+        if (command.empty()) {
+            values.clear();
+            return;
+        }
+        auto point = 0;
+        command += ",";
+        bool pre_str = false;//之前的值是一个字符串
+        for (auto i = 0; i < command.length(); i++) {
+            auto char_ = command[i];
+            if (char_ == ',' && !pre_str) {
+                auto new_value = command.substr(point, i - point);
+                values.emplace_back(new_value);
+                point = i + 1;
+                continue;
+            }
+            if (char_ == ',') {
+                pre_str = false;
+                point = i + 1;
+                continue;
+            }
+            if (char_ == '\"') {
+                if (pre_str) {
+                    auto new_value = command.substr(point, i - point);
+                    values.emplace_back(new_value);
+                } else {
+                    pre_str = true;
+                    point = i + 1;
+                }
+            }
+        }
+    }
+
+    auto Parser::str_to_value(TYPE_ID typeId, const std::string str) -> Value {
+        switch (typeId) {
+            case INT: {
+                int num = std::stoi(str);
+                if (num == 0 && (str != "0" && str != "-0")) {
+                    throw error_command("Can't parse \"" + str + "\" to a number");
+                }
+                return {INT, num};
+            }
+            case STRING: {
+                return {STRING, str.c_str(), str.length()};
+            }
+        }
+        throw error_type("No such type");
     }
 
 } // antidb

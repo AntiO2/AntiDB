@@ -37,7 +37,7 @@ namespace antidb {
         EXPECT_EQ(db->getDbName(), "AntiO2");
     }
 
-    TEST(CREATE_DROP, CD) {
+    TEST(CREATE_DROP, DISABLED_CD) {
         EXPECT_EQ(CreateExecutor::CreateDataBase("AntiO2"), true);
         auto db = UseExecutor::UseDataBase("AntiO2");
         std::string sql = "create table anti_table(id int,age int,name string);";
@@ -47,6 +47,61 @@ namespace antidb {
         DropExecutor::DropTable("anti_table", &db);
         db = nullptr;
         DropExecutor::DropDatabase("AntiO2");
+    }
+
+    TEST(INSERT, DISABLED_SELECT_AND_INSERT) {
+        CreateExecutor::CreateDataBase("AntiO2");
+        auto db = UseExecutor::UseDataBase("AntiO2");
+        /**
+         * 创建表
+         */
+        std::string sql = "create table antio2(id int,age int,name string);";
+        auto stmt = Statement(sql);
+        auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
+        CreateExecutor::CreateTable(*c_stmt, *db);
+
+        std::string sql2("insert table antio2 values(1,2,\"AntiO2\");");
+        auto stmt2 = Statement(sql2);
+        auto i_stmt = (Insert_Statement *) antidb::Parser::parse_sql(stmt2);
+        EXPECT_EQ(i_stmt->value_str.size(), 3);
+        EXPECT_EQ(i_stmt->table_name_, "antio2");
+        for (const auto &value: i_stmt->value_str) {
+            std::cout << value << std::endl;
+        }
+        for (int i = 0; i <= 3; i++)
+            InsertExecutor::InsertByStmt(i_stmt, &db);
+        auto tuple = SelectExecutor::ReadTuple(db->getTable("antio2"), 0);
+        std::vector<Value> vs;
+        db.get()->getTable("antio2")->Parse_tuple(vs, tuple);
+        for (auto v: vs) {
+            std::cout << v.GetInt() << std::endl;
+        }
+
+    }
+
+    TEST(INSERT, INSERT_PRIMARY) {
+        CreateExecutor::CreateDataBase("AntiO2");
+        auto db = UseExecutor::UseDataBase("AntiO2");
+        /**
+         * 创建表
+         */
+        std::string sql = "create table antio2(id int primary,age int,name string);";
+        auto stmt = Statement(sql);
+        auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
+        auto table = CreateExecutor::CreateTable(*c_stmt, *db);
+        ASSERT_EQ(table->schema_.getKeyId(), 0);
+        ASSERT_EQ(table->schema_.Has_Primary(), true);
+
+        for (int i = 0; i < 3; i++) {
+            std::string sql2 = "insert table antio2 values(";
+            sql2 += std::to_string(i);
+            sql2 += ",2,\"AntiO2\");";
+            auto stmt2 = Statement(sql2);
+            auto i_stmt = (Insert_Statement *) antidb::Parser::parse_sql(stmt2);
+            EXPECT_EQ(i_stmt->value_str.size(), 3);
+            EXPECT_EQ(i_stmt->table_name_, "antio2");
+            InsertExecutor::InsertByStmt(i_stmt, &db);
+        }
     }
 }
 

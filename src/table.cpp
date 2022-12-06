@@ -23,6 +23,13 @@ namespace antidb {
         tuple_max_num_ = tuple_per_page_ * TABLE_MAX_PAGE;
         db_name_ = dbname;
         diskManager_ = new DiskManager(DATA_PATH + "/" + dbname + "/" + schema_.table_name_ + DATA_FORMAT);
+        if (schema_.Has_Primary()) {
+            /**
+             * 如果有主键，则创建b+树
+             */
+            bpt = std::make_unique<bplus_tree>(
+                    (DATA_PATH + "/" + db_name_ + "/" + schema_.table_name_ + IDX_FORMAT).c_str());
+        }
     }
 
     Table::~Table() {
@@ -45,22 +52,24 @@ namespace antidb {
 
     }
 
-    void Table::WriteTuple(Tuple &tuple) {
+    tuple_id_t Table::WriteTuple(const Tuple &tuple) {
         char *dst = nullptr;
+        tuple_id_t tid = -1;
         if (spare_tuple_.empty()) {
             if (cnt_tuple_ >= tuple_max_num_) {
                 throw error_table("AntiDB:Table Overflow");
             } else {
+                tid = cnt_tuple_;
                 dst = LocateTuple(cnt_tuple_);
                 cnt_tuple_++;
             }
         } else {
-            auto tid = Pop_TID();
+            tid = Pop_TID();
             dst = LocateTuple(tid);
         }
         tuple.write(dst);
+        return tid;
     }
-
     char *Table::LocateTuple(const uint32_t &RID) {
         if (RID >= tuple_max_num_) {
             throw error_table("AntiDB:Table Overflow");
@@ -85,7 +94,6 @@ namespace antidb {
         }
         tuple.read((char *) LocateTuple(tupleId));
     }
-
     const Schema &Table::getSchema() const {
         return schema_;
     }
@@ -116,14 +124,35 @@ namespace antidb {
     }
 
     void Table::addSpareTID(tuple_id_t tid) {
-        spare_tuple_.push_back(tid);
+        spare_tuple_.insert(tid);
     }
 
+    /**
+     * 获取一个空闲的tid
+     * @return
+     */
     tuple_id_t Table::Pop_TID() {
-        tuple_id_t tid = spare_tuple_.front();
+        tuple_id_t tid = *spare_tuple_.begin();
         spare_tuple_.erase(spare_tuple_.begin());
         return tid;
     }
+
+    bool Table::is_spare(tuple_id_t tid) {
+        return spare_tuple_.find(tid) != spare_tuple_.end();
+    }
+
+    void Table::Parse_tuple(std::vector<Value> &values, Tuple &tuple) {
+        tuple.deserialize(values, schema_);
+    }
+
+    void Table::Insert_Key(key_t &key, tuple_id_t &tid) const {
+        bpt->insert(key, tid);
+    }
+
+    uint32_t Table::getRealTuple() const {
+        return cnt_tuple_ - spare_tuple_.size();
+    }
+
 
     std::ifstream &operator>>(std::ifstream &is, Table &table) {
         is >> table.schema_;

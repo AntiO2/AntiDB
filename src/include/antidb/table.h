@@ -10,11 +10,35 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <map>
 #include "antidb/schema.h"
 #include "antidb/config.h"
 #include "antidb/tuple.h"
 #include "antidb/disk_manager.h"
+#include "antidb/bpt.h"
+
 namespace antidb {
+//    class Key_TID{
+//    public:
+//        Key_TID(Value key,tuple_id_t tid):key_tid(key,tid)
+//        {
+//        }
+//        std::pair <Value ,tuple_id_t > key_tid;
+//
+//        bool operator==(Key_TID&keyTid2)
+//        {
+//            return key_tid.first==keyTid2.key_tid.first;
+//        }
+//        bool operator<(const Key_TID&keyTid2)const
+//        {
+//            return key_tid.first<keyTid2.key_tid.first;
+//        }
+//
+//        bool operator>( Key_TID&keyTid2)
+//        {
+//            return key_tid.first>keyTid2.key_tid.first;
+//        }
+//    };
     /**
      * 表类
      */
@@ -30,7 +54,7 @@ namespace antidb {
          * 传入tuple，写入表中
          * @param tuple
          */
-        void WriteTuple(Tuple &tuple);
+        tuple_id_t WriteTuple(const Tuple &tuple);
 
         /**
          * 读出指定rid
@@ -47,6 +71,8 @@ namespace antidb {
 
         [[nodiscard]] uint32_t getCntTuple() const;
 
+        uint32_t getRealTuple() const;
+
         [[nodiscard]] uint32_t getTuplePerPage() const;
 
         [[nodiscard]] uint32_t getTupleMaxNum() const;
@@ -59,15 +85,27 @@ namespace antidb {
 
         friend std::istream &operator>>(std::istream &is, Table &table);
 
+        bool is_spare(tuple_id_t tid);
+
+        /**
+         * 通过tuple生成Value向量
+         * @return
+         */
+        void Parse_tuple(std::vector<Value> &values, Tuple &tuple);
+
         Schema schema_;
         uint32_t cnt_tuple_{0};
+
+        void Insert_Key(key_t &key, tuple_id_t &tid) const;
+
+        std::unique_ptr<bplus_tree> bpt;
     private:
         std::string table_name_;
         void *pages[TABLE_MAX_PAGE]{};
         DiskManager *diskManager_;
         uint32_t tuple_per_page_;//每页存放tuple数目
         uint32_t tuple_max_num_;//最多tuple数目
-        std::vector<tuple_id_t> spare_tuple_;
+        std::set<tuple_id_t> spare_tuple_;
         std::string db_name_;
     };
 

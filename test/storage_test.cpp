@@ -12,6 +12,7 @@
 #include "string"
 #include "antidb/database.h"
 #include "antidb/executor.h"
+#include "antidb/bpt.h"
 namespace antidb {
     using std::cout;
     using std::endl;
@@ -90,5 +91,17 @@ namespace antidb {
 
     TEST(STORAGE_TEST, RECORY_DISK) {
         auto db = UseExecutor::UseDataBase("AntiO2");
+    }
+
+    TEST(BPT_TEST, BPT) {
+        auto bpt = bplus_tree("anti.index");
+        bpt.insert(1, 1);
+        bpt.insert(2, 4);
+        bpt.insert(3, 9);
+        uint32_t a = 1;
+        std::vector<value_t> vs;
+        bpt.search_range(&a, 3, vs, 999);
+        bpt.remove(4);
+        a = 2;
     }
 }

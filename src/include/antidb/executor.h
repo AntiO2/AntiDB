@@ -12,6 +12,7 @@
 #include "antidb/statement.h"
 #include "antidb/tuple.h"
 #include "antidb/database.h"
+#include "antidb/parser.h"
 namespace antidb {
 
     class AbstractExecutor {
@@ -33,6 +34,8 @@ namespace antidb {
 
     class InsertExecutor : AbstractExecutor {
     public:
+        static auto InsertByStmt(Insert_Statement *i_stmt, std::unique_ptr<Database> *db) -> void;
+
         /**
          * 在指定位置写入tuple数据
          * @param tuple
@@ -46,8 +49,11 @@ namespace antidb {
 
     class SelectExecutor : AbstractExecutor {
     public:
+        static auto Projection(std::vector<std::vector<Value>> &values, uint32_t col_id) -> void;
 
-        static auto ReadTuple(Table &t, tuple_id_t tid);
+        static auto Select(Select_Statement *s_stmt, std::unique_ptr<Database> *db) -> std::vector<std::vector<Value>>;
+
+        static auto ReadTuple(Table *t, tuple_id_t tid) -> Tuple;
     };
 
     class DropExecutor : AbstractExecutor {

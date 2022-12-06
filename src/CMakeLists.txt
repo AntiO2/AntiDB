@@ -5,7 +5,8 @@ add_library(storage
         STATIC
         disk_manager.cpp
         table.cpp
-        database.cpp)
+        database.cpp
+        bpt.cpp)
 add_library(executor
         STATIC
         executor.cpp)
@@ -21,4 +22,5 @@ target_link_libraries(
 target_link_libraries(
         executor
         storage
+        parser
 )
