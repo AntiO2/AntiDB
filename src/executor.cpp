@@ -160,6 +160,8 @@ namespace antidb {
                 }
                 Tuple tuple(tuple_size);
                 table->ReadTuple(tuple, i);
+                std::vector<Value> vs;
+                table->Parse_tuple(vs, tuple);
                 if (s_stmt->has_condition) {
                     /**
                      * FIXME(AntiO2) 想到了一个问题，如果列的名字相同呢？parser是没有处理这种情况的
@@ -170,25 +172,24 @@ namespace antidb {
                     if (col_condition == -1) {
                         throw error_command("No column " + s_stmt->condition.getColName());
                     }
-                    std::vector<Value> vs;
-                    table->Parse_tuple(vs, tuple);
 
                     if (s_stmt->condition.condition_is_true(vs[col_condition])) {
-                        results.emplace_back(vs);
+                        continue;
                     }
                 }
+                results.emplace_back(vs);
             }
         } else {
             int left = INT_MIN;
             int right = INT_MAX;
-            tuple_id_t tid;
+            tuple_id_t tid{0};
             std::vector<tuple_id_t> tids_;
             switch (s_stmt->condition.getConditionType()) {
 
                 case NO_CONDITION:
                     break;
                 case GREATER: {
-                    auto left_ = s_stmt->condition.getComparedNum() + 1;
+                    auto left_ = s_stmt->condition.getComparedNum();
                     table->bpt->search_range(&left_, right, tids_, table->getRealTuple() + 1);
                     break;
                 }
@@ -209,7 +210,7 @@ namespace antidb {
              */
             for (auto a_tid: tids_) {
                 Tuple tuple(tuple_size);
-                table->ReadTuple(tuple, tid);
+                table->ReadTuple(tuple, a_tid);
                 std::vector<Value> vs;
                 table->Parse_tuple(vs, tuple);
                 results.emplace_back(vs);

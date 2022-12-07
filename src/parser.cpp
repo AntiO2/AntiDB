@@ -346,8 +346,30 @@ namespace antidb {
         return u_stmt;
     }
 
-    auto Parser::parse_delete(Statement &statement) -> Statement * {
-        return nullptr;
+    /**
+     * delete table [where col op num]
+     * 有2个token 或者 6个token
+     * @param statement
+     * @return
+     */
+    auto Parser::parse_delete(Statement &statement) -> Delete_Statement * {
+        auto d_stmt = new Delete_Statement(std::move(statement));
+        auto tokens = d_stmt->tokens;
+        if (tokens.size() == 2) {
+            d_stmt->table_name_ = tokens[1];
+            return d_stmt;
+        }
+        if (tokens.size() != 6) {
+            throw error_command("Delete command isn't correct\n<usage>delete tablename [where col_name op num]");
+        }
+        if (tokens[2] != "where") {
+            throw error_command("Delete command isn't correct\n<usage>delete tablename [where col_name op num]");
+        }
+        auto table_name = tokens[1];
+        d_stmt->table_name_ = table_name;
+        d_stmt->has_condition = true;
+        d_stmt->condition = Condition(tokens[3], tokens[4][0], tokens[5]);
+        return d_stmt;
     }
 
     auto Parser::parse_drop(Statement &statement) -> Drop_Statement * {

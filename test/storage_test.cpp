@@ -98,7 +98,7 @@ namespace antidb {
         bpt.insert(1, 1);
         bpt.insert(2, 4);
         bpt.insert(3, 9);
-        uint32_t a = 1;
+        int a = 1;
         std::vector<value_t> vs;
         bpt.search_range(&a, 3, vs, 999);
         bpt.remove(4);

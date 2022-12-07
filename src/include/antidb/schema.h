@@ -66,7 +66,7 @@ namespace antidb {
         }
 
         friend std::ostream &operator<<(std::ostream &os, const Schema &schema) {
-            os << schema.table_name_ << " " << schema.offset_ << " " << schema.cols_.size() << std::endl;
+            os << schema.table_name_ << " " << schema.cols_.size() << std::endl;
             for (const auto &col: schema.cols_) {
                 os << col << std::endl;
             }
@@ -75,7 +75,7 @@ namespace antidb {
 
         friend std::ifstream &operator>>(std::ifstream &ifs, Schema &schema) {
             auto col_num = 0;
-            ifs >> schema.table_name_ >> schema.offset_ >> col_num;
+            ifs >> schema.table_name_ >> col_num;
             for (auto i = 0; i < col_num; i++) {
                 Column col;
                 ifs >> col;

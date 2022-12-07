@@ -98,6 +98,8 @@ namespace antidb {
 
         void Insert_Key(key_t &key, tuple_id_t &tid) const;
 
+        void setCntTuple(uint32_t cntTuple);
+
         std::unique_ptr<bplus_tree> bpt;
     private:
         std::string table_name_;

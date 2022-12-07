@@ -8,7 +8,10 @@
 #include <string>
 #include "antidb/config.h"
 #include "value.h"
-
+/**
+ * FIXME(AntiO2) 没有实现string的比较
+ * condition类 用于判断条件是否正确
+ */
 namespace antidb {
     class Condition {
     public:
@@ -42,7 +45,6 @@ namespace antidb {
                     return v.GetInt() > compared_num_;
                 case LESS:
                     return v.GetInt() < compared_num_;
-
                 case EQUAL:
                     return v.GetInt() == compared_num_;
                 case NO_CONDITION:

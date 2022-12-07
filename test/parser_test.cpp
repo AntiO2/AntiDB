@@ -137,4 +137,37 @@ namespace antidb {
 
         }
     }
+
+    TEST(Parser, Parser_DELETE) {
+        {
+            std::string sql("delete;");
+            auto stmt = Statement(sql);
+            EXPECT_ANY_THROW(antidb::Parser::parse_sql(stmt));
+        }
+
+        {
+            std::string sql("delete table;");
+            auto stmt = Statement(sql);
+            auto d_stmt = (Delete_Statement *) antidb::Parser::parse_sql(stmt);
+            EXPECT_EQ(d_stmt->has_condition, false);
+            EXPECT_EQ(d_stmt->table_name_, "table");
+        }
+        {
+            std::string sql("delete table where 1 = 2;");
+            auto stmt = Statement(sql);
+            auto d_stmt = (Delete_Statement *) antidb::Parser::parse_sql(stmt);
+            EXPECT_EQ(d_stmt->has_condition, true);
+            EXPECT_EQ(d_stmt->table_name_, "table");
+            EXPECT_EQ(d_stmt->condition.getComparedNum(), 2);
+            EXPECT_EQ(d_stmt->condition.getConditionType(), EQUAL);
+            EXPECT_EQ(d_stmt->condition.getColName(), "1");
+            auto v1 = Value(INT, 3);
+            EXPECT_EQ(d_stmt->condition.condition_is_true(v1), false);
+            auto v2 = Value(INT, 2);
+            EXPECT_EQ(d_stmt->condition.condition_is_true(v2), true);
+        }
+
+
+    }
+
 }

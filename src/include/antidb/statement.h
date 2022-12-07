@@ -62,6 +62,14 @@ namespace antidb {
         Condition condition;
     };
 
+    class Delete_Statement : public Statement {
+    public:
+        explicit Delete_Statement(Statement &&statement) : Statement(std::move(statement)) {};
+        std::string table_name_;
+        bool has_condition{false};
+        Condition condition;
+    };
+
     class Insert_Statement : public Statement {
     public:
         explicit Insert_Statement(Statement &&statement) : Statement(std::move(statement)) {};

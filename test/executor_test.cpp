@@ -79,8 +79,8 @@ namespace antidb {
 
     }
 
-    TEST(INSERT, INSERT_PRIMARY) {
-        CreateExecutor::CreateDataBase("AntiO2");
+    TEST(INSERT, DISABLED_INSERT_PRIMARY) {
+//        CreateExecutor::CreateDataBase("AntiO2");
         auto db = UseExecutor::UseDataBase("AntiO2");
         /**
          * 创建表
@@ -103,5 +103,84 @@ namespace antidb {
             InsertExecutor::InsertByStmt(i_stmt, &db);
         }
     }
+
+    TEST(insert_and_select, one) {
+//        CreateExecutor::CreateDataBase("AntiO2");
+        auto db = UseExecutor::UseDataBase("AntiO2");
+        /********************
+         * 创建表
+         */
+//        std::string sql = "create table antio2(id int primary,age int,name string);";
+//        auto stmt = Statement(sql);
+//        auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
+//        auto table = CreateExecutor::CreateTable(*c_stmt, *db);
+//        ASSERT_EQ(table->schema_.getKeyId(), 0);
+//        ASSERT_EQ(table->schema_.Has_Primary(), true);
+        /**
+         * 创建完成
+         ************************/
+        /************************
+         * 插入数据测试
+         */
+        for (int i = 0; i < 3; i++) {
+            std::string sql2 = "insert table antio2 values(";
+            sql2 += std::to_string(i);
+            sql2 += ",2,\"AntiO2\");";
+            auto stmt2 = Statement(sql2);
+            auto i_stmt = (Insert_Statement *) antidb::Parser::parse_sql(stmt2);
+            EXPECT_EQ(i_stmt->value_str.size(), 3);
+            EXPECT_EQ(i_stmt->table_name_, "antio2");
+            InsertExecutor::InsertByStmt(i_stmt, &db);
+        }
+        /**
+         *
+         *********************************/
+        /**
+         * select测试
+         */
+        {
+            std::string s_sql = "select * from antio2";
+            auto s_stmt = Statement(s_sql);
+            auto sp_stmt = (Select_Statement *) Parser::parse_sql(s_stmt);
+            auto vss = SelectExecutor::Select(sp_stmt, &db);
+            auto pause = 0;
+        }
+
+        /**
+         * select测试
+         */
+        {
+            std::string s_sql = "select * from antio2 where id > 1";
+            auto s_stmt = Statement(s_sql);
+            auto sp_stmt = (Select_Statement *) Parser::parse_sql(s_stmt);
+            EXPECT_EQ(sp_stmt->condition.getConditionType(), GREATER);
+            EXPECT_EQ(sp_stmt->condition.getComparedNum(), 1);
+            auto vss = SelectExecutor::Select(sp_stmt, &db);
+            auto pause = 0;
+        }
+        /**
+ * select测试
+ */
+        {
+            std::string s_sql = "select * from antio2 where id = 1";
+            auto s_stmt = Statement(s_sql);
+            auto sp_stmt = (Select_Statement *) Parser::parse_sql(s_stmt);
+
+            auto vss = SelectExecutor::Select(sp_stmt, &db);
+            auto pause = 0;
+        }
+        /**
+* select测试
+*/
+        {
+            std::string s_sql = "select * from antio2 where id < 3";
+            auto s_stmt = Statement(s_sql);
+            auto sp_stmt = (Select_Statement *) Parser::parse_sql(s_stmt);
+
+            auto vss = SelectExecutor::Select(sp_stmt, &db);
+            auto pause = 0;
+        }
+    }
+
 }
 

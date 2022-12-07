@@ -41,8 +41,8 @@ namespace antidb {
             }
         }
         std::ofstream ofs;
-        ofs.open(DATA_PATH + "/" + db_name_ + "/" + schema_.table_name_ + INFO_FORMAT, std::ios::app);
-        ofs << std::endl;
+        ofs.open(DATA_PATH + "/" + db_name_ + "/" + schema_.table_name_ + INFO_FORMAT, std::ios::trunc | std::ios::out);
+        ofs << schema_ << std::endl << cnt_tuple_ << std::endl;
         for (auto tid: spare_tuple_) {
             ofs << tid << " ";
         }
@@ -135,6 +135,10 @@ namespace antidb {
         tuple_id_t tid = *spare_tuple_.begin();
         spare_tuple_.erase(spare_tuple_.begin());
         return tid;
+    }
+
+    void Table::setCntTuple(uint32_t cntTuple) {
+        cnt_tuple_ = cntTuple;
     }
 
     bool Table::is_spare(tuple_id_t tid) {

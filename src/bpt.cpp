@@ -89,7 +89,7 @@ namespace antidb {
     }
 
     int bplus_tree::search_range(key_t *left, const key_t &right,
-                                 std::vector<value_t> values, size_t max, bool *next) const {
+                                 std::vector<value_t> &values, size_t max, bool *next) const {
         if (left == nullptr || keycmp(*left, right) > 0)
             return -1;
 

@@ -96,7 +96,7 @@ namespace antidb {
         int search(const key_t &key, value_t *value) const;
 
         int search_range(key_t *left, const key_t &right,
-                         std::vector<value_t> values, size_t max, bool *next = nullptr) const;
+                         std::vector<value_t> &values, size_t max, bool *next = nullptr) const;
 
         int remove(const key_t &key);
 

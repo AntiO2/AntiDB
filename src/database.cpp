@@ -95,6 +95,7 @@ namespace antidb {
             Schema schema;
             ifs >> schema;
             auto table = new Table(schema, db_name_);
+            ifs >> table->cnt_tuple_;
             uint32_t tid;
             while (!ifs.eof()) {
                 ifs >> tid;
@@ -114,5 +115,6 @@ namespace antidb {
         table_map_.erase(it);
         std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + INFO_FORMAT);
         std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + DATA_FORMAT);
+        std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + IDX_FORMAT);
     }
 } // antidb

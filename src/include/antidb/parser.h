@@ -33,7 +33,7 @@ namespace antidb {
 
         static auto parse_drop(Statement &statement) -> Drop_Statement *;
 
-        static auto parse_delete(Statement &statement) -> Statement *;
+        static auto parse_delete(Statement &statement) -> Delete_Statement *;
 
         static auto parse_use(Statement &statement) -> Use_Statement *;
 
