@@ -27,7 +27,6 @@ namespace antidb {
     class Create_Statement : public Statement {
     public:
         explicit Create_Statement(Statement &&statement) : Statement(std::move(statement)) {};
-
         std::string name_;
         CREATE_TYPE createType_{CREATE_DATABASE};
         Schema schema_;
@@ -60,6 +59,10 @@ namespace antidb {
         bool select_all_{false};
         bool has_condition{false};
         Condition condition;
+        /**
+         * 需要被打印的列，这里是由于一开始设计思路出了问题加的
+         */
+        std::vector<std::pair<std::string, TYPE_ID>> selected_cols;
     };
 
     class Delete_Statement : public Statement {

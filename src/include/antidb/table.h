@@ -95,6 +95,7 @@ namespace antidb {
 
         Schema schema_;
         uint32_t cnt_tuple_{0};
+        bool delete_tuple(tuple_id_t &tid);
 
         void Insert_Key(key_t &key, tuple_id_t &tid) const;
 

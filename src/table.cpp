@@ -126,7 +126,6 @@ namespace antidb {
     void Table::addSpareTID(tuple_id_t tid) {
         spare_tuple_.insert(tid);
     }
-
     /**
      * 获取一个空闲的tid
      * @return
@@ -155,6 +154,20 @@ namespace antidb {
 
     uint32_t Table::getRealTuple() const {
         return cnt_tuple_ - spare_tuple_.size();
+    }
+
+    /**
+     * CHECK 这里没有删除索引中的值，注意在执行器里面remove
+     * @param tid
+     * @return
+     */
+    bool Table::delete_tuple(tuple_id_t &tid) {
+        auto it = spare_tuple_.find(tid);
+        if (it == spare_tuple_.end()) {
+            return false;
+        }
+        spare_tuple_.emplace(tid);
+        return true;
     }
 
 

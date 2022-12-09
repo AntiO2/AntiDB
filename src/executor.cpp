@@ -10,14 +10,14 @@
 namespace antidb {
     /**
      * 已弃用
+     * 弃用原因：不能返回table
      * @param createStatement
      */
-    CreateExecutor::CreateExecutor(Create_Statement &createStatement) {
-        if (createStatement.createType_ == CREATE_DATABASE) {
-            if (!CreateDataBase(createStatement.name_)) {
-                throw error_command("DataBase " + createStatement.name_ + " already exists");
-            }
+    auto CreateExecutor::Create(Create_Statement *createStatement, std::unique_ptr<Database> *db) -> void {
+        if (createStatement->createType_ == CREATE_DATABASE) {
+            CreateDataBase(createStatement->name_);
         }
+        CreateTable(*createStatement, db);
     }
 
     auto CreateExecutor::CreateDataBase(const std::string &database_name) -> bool {
@@ -32,13 +32,18 @@ namespace antidb {
         return true;
     }
 
-    auto CreateExecutor::CreateTable(const Create_Statement &createStatement, Database &database) -> Table * {
-        auto table = new Table(createStatement.schema_, database.getDbName());
+    auto
+    CreateExecutor::CreateTable(const Create_Statement &createStatement, std::unique_ptr<Database> *db) -> Table * {
+        auto table = new Table(createStatement.schema_, db->get()->getDbName());
+        /**
+         * 如果重名，则抛出
+        */
         try {
-            database.addTable(table);
+            db->get()->addTable(table);
         }
             /**
-             * 如果重名，则抛出
+             * CHECK 检查这里重名文件是否会受到影响
+             *
              */
         catch (error_table &e) {
             delete table;
@@ -48,7 +53,7 @@ namespace antidb {
          * create table 还需要记录元信息
          */
         std::fstream fsm;
-        fsm.open(DATA_PATH + database.getDbName() + "/" + createStatement.schema_.table_name_ + ".info",
+        fsm.open(DATA_PATH + db->get()->getDbName() + "/" + createStatement.schema_.table_name_ + ".info",
                  std::ios::trunc | std::ios::out);
         if (!fsm.is_open()) {
             throw error_file("Cant open information file : " + createStatement.schema_.table_name_ + ".info");
@@ -123,17 +128,17 @@ namespace antidb {
     }
 
 
-    auto SelectExecutor::ReadTuple(Table *t, const tuple_id_t tid) -> Tuple {
-        std::vector<Value> values;
-        Tuple tuple(t->getSchema().GetSize());
-        if (t->is_spare(tid)) {
-            throw error_table("Inner error:Try read deleted tuple.Please Connect antio2@qq.com");
-        }
-        t->ReadTuple(tuple, tid);
-        return tuple;
-    }
+//    auto SelectExecutor::ReadTuple(Table *t, const tuple_id_t tid) -> Tuple {
+//        std::vector<Value> values;
+//        Tuple tuple(t->getSchema().GetSize());
+//        if (t->is_spare(tid)) {
+//            throw error_table("Inner error:Try read deleted tuple.Please Connect antio2@qq.com");
+//        }
+//        t->ReadTuple(tuple, tid);
+//        return tuple;
+//    }
 
-    auto
+    [[nodiscard]]auto
     SelectExecutor::Select(Select_Statement *s_stmt, std::unique_ptr<Database> *db) -> std::vector<std::vector<Value>> {
         std::vector<std::vector<Value>> results;
         if (db == nullptr) {
@@ -172,8 +177,10 @@ namespace antidb {
                     if (col_condition == -1) {
                         throw error_command("No column " + s_stmt->condition.getColName());
                     }
-
-                    if (s_stmt->condition.condition_is_true(vs[col_condition])) {
+                    /**
+                     * 如果不满足条件，删除
+                     */
+                    if (!s_stmt->condition.condition_is_true(vs[col_condition])) {
                         continue;
                     }
                 }
@@ -209,6 +216,9 @@ namespace antidb {
              * FIXME 这里和上面的代码有重复，考虑优化为函数
              */
             for (auto a_tid: tids_) {
+                if (table->is_spare(a_tid)) {
+                    continue;
+                }
                 Tuple tuple(tuple_size);
                 table->ReadTuple(tuple, a_tid);
                 std::vector<Value> vs;
@@ -216,13 +226,22 @@ namespace antidb {
                 results.emplace_back(vs);
             }
         }
+        /**
+         * 这里对结果做投影操作，并提供选取列的信息
+         */
         if (!s_stmt->select_all_) {
             auto col_selected = table->schema_.GetColId(s_stmt->col_name_);
             if (col_selected == -1) {
                 throw error_command("No column " + s_stmt->col_name_);
             }
+            s_stmt->selected_cols.emplace_back(s_stmt->col_name_, table->schema_.cols_[col_selected].type_);
             Projection(results, col_selected);
+        } else {
+            for (const auto &col: table->schema_.cols_) {
+                s_stmt->selected_cols.emplace_back(col.col_name_, col.type_);
+            }
         }
+
         return results;
     }
 
@@ -234,6 +253,19 @@ namespace antidb {
         }
     }
 
+    auto SelectExecutor::LazySelect(Select_Statement *s_stmt, std::unique_ptr<Database> *db) -> void {
+
+        auto results = Select(s_stmt, db);
+//        OutputProjection(s_stmt,results);
+    }
+
+//    auto SelectExecutor::OutputProjection(Select_Statement *s_stmt, std::vector<std::vector<Value>> &values) -> void {
+//        if(s_stmt->select_all_)
+//        {
+//            for(s_stmt->table_name_)
+//        }
+//    }
+
 
     auto DropExecutor::DropTable(const std::string &table_name, std::unique_ptr<Database> *db) -> void {
         if (db == nullptr) {
@@ -244,5 +276,135 @@ namespace antidb {
 
     auto DropExecutor::DropDatabase(const std::string &db_name) -> void {
         std::filesystem::remove_all(DATA_PATH + db_name);
+    }
+
+    auto DeleteExecutor::DeleteByStmt(Delete_Statement *deleteStatement, std::unique_ptr<Database> *db) -> void {
+        if (db == nullptr) {
+            throw error_database("No database using");
+        }
+        auto table = db->get()->getTable(deleteStatement->table_name_);
+        if (table == nullptr) {
+            throw error_table("No table named " + deleteStatement->table_name_);
+        }
+        /**
+         * 如果没有主键,遍历所有tuple 或者有主键但是没有条件
+         * 或者是有主键，有条件，但是需要比较的列和主键不是同一列
+         *
+         * 简而言之就是需要遍历tid
+         */
+        auto tuple_size = table->getSchema().GetSize();
+        auto has_primary = table->schema_.Has_Primary();
+        auto primary_col_id = table->schema_.getKeyId();
+        /**
+         *
+         * 如果有判断条件，获得条件列
+         */
+        int col_condition = -1;
+
+        if (deleteStatement->has_condition) {
+            col_condition = table->schema_.GetColId(deleteStatement->condition.getColName());
+            if (col_condition == -1) {
+                throw error_command("No column " + deleteStatement->condition.getColName());
+            }
+        }
+        if (!has_primary || ((!deleteStatement->has_condition || (deleteStatement->has_condition &&
+                                                                  (deleteStatement->condition.getColName() !=
+                                                                   table->getSchema().cols_.at(
+                                                                           table->schema_.getKeyId()).col_name_))))) {
+
+            for (tuple_id_t i = 0; i < table->getCntTuple(); i++) {
+                if (table->is_spare(i)) {
+                    continue;
+                }
+                Tuple tuple(tuple_size);
+                table->ReadTuple(tuple, i);
+                std::vector<Value> vs;
+                table->Parse_tuple(vs, tuple);
+                /**
+                 *
+                 */
+                if (deleteStatement->has_condition) {
+                    if (!deleteStatement->condition.condition_is_true(vs[col_condition])) {
+                        continue;
+                    }
+                }
+                /**
+                 * 如果有主键，删去对应索引中的键值对
+                 */
+                if (has_primary) {
+                    table->bpt->remove(vs.at(primary_col_id).GetInt());
+                }
+                table->delete_tuple(i);
+            }
+        } else {
+            int left = INT_MIN;
+            int right = INT_MAX;
+            tuple_id_t tid{0};
+            std::vector<tuple_id_t> tids_;
+            switch (deleteStatement->condition.getConditionType()) {
+
+                case NO_CONDITION:
+                    break;
+                case GREATER: {
+                    auto left_ = deleteStatement->condition.getComparedNum();
+                    table->bpt->search_range(&left_, right, tids_, table->getRealTuple() + 1);
+                    break;
+                }
+                case LESS: {
+                    auto right_ = deleteStatement->condition.getComparedNum() - 1;
+                    table->bpt->search_range(&left, right_, tids_, table->getRealTuple() + 1);
+                    break;
+                }
+
+                case EQUAL:
+                    table->bpt->search(deleteStatement->condition.getComparedNum(), &tid);
+                    tids_.push_back(tid);
+                    break;
+            }
+            /**
+             * 根据tuple id,寻找对应的tuple
+             * FIXME 这里和上面的代码有重复，考虑优化为函数
+             */
+            for (auto a_tid: tids_) {
+                /**
+                 * CHECK(这里已经删除的索引不会出现tids_中)
+                 * 调试时打断点优化
+                 */
+                if (table->is_spare(a_tid)) {
+                    continue;//xxx
+                }
+                /**
+                 * FIXME 感觉这里有点蠢，根据主键找到了范围内的tid，再根据tid解析出满足条件主键，传入remove删除
+                 * 原因是bpt中没有实现按照范围删除
+                 * 后期优化加上
+                 */
+                Tuple tuple(tuple_size);
+                table->ReadTuple(tuple, a_tid);
+                std::vector<Value> vs;
+                table->Parse_tuple(vs, tuple);
+                table->bpt->remove(vs.at(primary_col_id).GetInt());
+            }
+        }
+    }
+
+
+    auto PrintExecutor::PrintValue(Select_Statement *s_stmt, std::vector<std::vector<Value>> &&values_s) -> void {
+        auto col_num = s_stmt->selected_cols.size();
+        for (auto &col_name: s_stmt->selected_cols) {
+            printf("%s\t", col_name.first.c_str());
+        }
+        printf("\n------------------------------------\n");
+        for (auto &values: values_s) {
+            for (auto i = 0; i < col_num; i++) {
+                switch (s_stmt->selected_cols.at(i).second) {
+                    case INT:
+                        printf("%d\t", values.at(i).GetInt());
+
+                    case STRING:
+                        printf("%s\t", values.at(i).getString().c_str());
+                }
+            }
+            printf("\n");
+        }
     }
 } // antidb

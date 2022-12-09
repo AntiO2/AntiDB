@@ -7,6 +7,7 @@
 
 #include <string>
 #include "antidb/database.h"
+#include "antidb/executor.h"
 namespace antidb {
 
     class Server {
@@ -14,6 +15,8 @@ namespace antidb {
         Server() = default;
 
         void OpenServer();
+
+        auto ExecuteOneSQL(std::string &sql, std::unique_ptr<Database> *db) -> void;
     };
 
 } // antidb

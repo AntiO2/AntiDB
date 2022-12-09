@@ -69,6 +69,11 @@ namespace antidb {
             return typeId_;
         }
 
+        [[nodiscard]] std::string getString() const {
+            std::string s = value_.str_;
+            return s;
+        }
+
         bool operator<(const Value &v2) const {
 
             if (typeId_ != v2.typeId_) {
@@ -127,6 +132,16 @@ namespace antidb {
 
         explicit operator bool() const {
             return strcmp(value_.str_, "");
+        }
+
+        friend std::ostream &operator<<(std::ostream &os, const Value &value) {
+            switch (value.getTypeId()) {
+                case INT:
+                    os << value.GetInt();
+                case STRING:
+                    os << value.getString();
+            }
+            return os;
         }
 
     private:

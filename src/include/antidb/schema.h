@@ -41,7 +41,7 @@ namespace antidb {
             }
         }
 
-        [[nodiscard]] uint32_t GetColId(const std::string &col_name) {
+        [[nodiscard]] int GetColId(const std::string &col_name) {
             auto it = col_id_.find(col_name);
             /**
              * CHECK 这里抛出异常会不会更好？
