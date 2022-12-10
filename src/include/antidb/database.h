@@ -30,7 +30,12 @@ namespace antidb {
 
         void setDbName(const std::string &dbName);
 
-        bool find(const std::string &table);
+        /**
+         * 查找数据库中是否有某个表名
+         * @param table
+         * @return
+         */
+        bool find(const std::string &table) noexcept;
 
         void insert(const std::string &table_name);
 

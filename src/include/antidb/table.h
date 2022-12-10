@@ -88,6 +88,13 @@ namespace antidb {
         bool is_spare(tuple_id_t tid);
 
         /**
+         * 是否存在主键
+         * @param key
+         * @return
+         */
+        bool exist_primary_key(key_t key);
+
+        /**
          * 通过tuple生成Value向量
          * @return
          */
@@ -95,6 +102,7 @@ namespace antidb {
 
         Schema schema_;
         uint32_t cnt_tuple_{0};
+
         bool delete_tuple(tuple_id_t &tid);
 
         void Insert_Key(key_t &key, tuple_id_t &tid) const;

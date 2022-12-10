@@ -43,7 +43,7 @@ namespace antidb {
         std::string sql = "create table anti_table(id int,age int,name string);";
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
-        CreateExecutor::CreateTable(*c_stmt, *db);
+        CreateExecutor::CreateTable(*c_stmt, &db);
         DropExecutor::DropTable("anti_table", &db);
         db = nullptr;
         DropExecutor::DropDatabase("AntiO2");

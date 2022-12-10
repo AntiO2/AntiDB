@@ -672,4 +672,13 @@ namespace antidb {
         unmap(&leaf, root.children[0].child);
     }
 
+//    bool bplus_tree::find_key(const antidb::key_t &key) const {
+//        value_t * vt = nullptr;
+//        search(key,vt);
+//        if(vt== nullptr) {
+//            return false;
+//        }
+//        return true;
+//    }
+
 }

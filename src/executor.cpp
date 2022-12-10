@@ -118,8 +118,12 @@ namespace antidb {
              * FIXME() 这里可能出现主键重复的情况
              *
              */
-            auto tid = table->WriteTuple(Tuple(values, schema));
             int key = values.at(schema.getKeyId()).GetInt();
+
+            if (table->exist_primary_key(key)) {
+                throw error_table("Primary key " + std::to_string(key) + " already exists in table " + table_name);
+            }
+            auto tid = table->WriteTuple(Tuple(values, schema));
             table->Insert_Key(key, tid);
         } else {
             table->WriteTuple(Tuple(values, schema));
@@ -142,6 +146,9 @@ namespace antidb {
     SelectExecutor::Select(Select_Statement *s_stmt, std::unique_ptr<Database> *db) -> std::vector<std::vector<Value>> {
         std::vector<std::vector<Value>> results;
         if (db == nullptr) {
+            throw error_database("No database using");
+        }
+        if (*db == nullptr) {
             throw error_database("No database using");
         }
         auto table = db->get()->getTable(s_stmt->table_name_);
@@ -246,7 +253,7 @@ namespace antidb {
     }
 
     auto SelectExecutor::Projection(std::vector<std::vector<Value>> &values, uint32_t col_id) -> void {
-        for (auto tuple_value: values) {
+        for (auto &tuple_value: values) {
             auto selected_value = tuple_value[col_id];
             tuple_value.clear();
             tuple_value.emplace_back(selected_value);
@@ -271,15 +278,24 @@ namespace antidb {
         if (db == nullptr) {
             throw error_database("No database selected");
         }
+        if (*db == nullptr) {
+            throw error_database("No database using");
+        }
         db->get()->removeTable(table_name);
     }
 
     auto DropExecutor::DropDatabase(const std::string &db_name) -> void {
-        std::filesystem::remove_all(DATA_PATH + db_name);
+        if (std::filesystem::remove_all(DATA_PATH + db_name)) {
+            return;
+        }
+        throw error_database("Can't find database " + db_name);
     }
 
     auto DeleteExecutor::DeleteByStmt(Delete_Statement *deleteStatement, std::unique_ptr<Database> *db) -> void {
         if (db == nullptr) {
+            throw error_database("No database using");
+        }
+        if (*db == nullptr) {
             throw error_database("No database using");
         }
         auto table = db->get()->getTable(deleteStatement->table_name_);
@@ -383,6 +399,7 @@ namespace antidb {
                 std::vector<Value> vs;
                 table->Parse_tuple(vs, tuple);
                 table->bpt->remove(vs.at(primary_col_id).GetInt());
+                table->delete_tuple(a_tid);
             }
         }
     }
@@ -391,17 +408,24 @@ namespace antidb {
     auto PrintExecutor::PrintValue(Select_Statement *s_stmt, std::vector<std::vector<Value>> &&values_s) -> void {
         auto col_num = s_stmt->selected_cols.size();
         for (auto &col_name: s_stmt->selected_cols) {
-            printf("%s\t", col_name.first.c_str());
+            std::cout << std::setw(10) << std::left << col_name.first.c_str();
         }
         printf("\n------------------------------------\n");
         for (auto &values: values_s) {
             for (auto i = 0; i < col_num; i++) {
                 switch (s_stmt->selected_cols.at(i).second) {
-                    case INT:
-                        printf("%d\t", values.at(i).GetInt());
+                    case INT: {
+                        auto integer = values.at(i).GetInt();
+                        std::cout << std::setw(std::max(10, (int) std::to_string(integer).length())) << std::left
+                                  << integer;
+                        break;
+                    }
+
 
                     case STRING:
-                        printf("%s\t", values.at(i).getString().c_str());
+                        auto str = values.at(i).getString();
+                        std::cout << std::setw((int) str.length() + 1) << std::left << str;
+                        break;
                 }
             }
             printf("\n");

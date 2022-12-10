@@ -277,14 +277,17 @@ namespace antidb {
     auto Parser::parse_insert(Statement &statement) -> Insert_Statement * {
         auto i_stmt = new Insert_Statement(std::move(statement));
         auto token = i_stmt->tokens;
+        /**
+         * insert antio2 values( )
+         */
         if (i_stmt->tokens.size() < 5) {
             throw error_command("Check the command: " + i_stmt->commandline_);
         }
-        i_stmt->table_name_ = i_stmt->tokens[2];
-        if (i_stmt->tokens[3] != "values") {
+        i_stmt->table_name_ = i_stmt->tokens[1];
+        if (i_stmt->tokens[2] != "values") {
             throw error_command("Check the command: " + i_stmt->commandline_);
         }
-        if (token[4] != "(") {
+        if (token[3] != "(") {
             throw error_command("Check the command: " + i_stmt->commandline_);
         }
         if (token[token.size() - 1] != ")") {

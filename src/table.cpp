@@ -42,7 +42,7 @@ namespace antidb {
         }
         std::ofstream ofs;
         ofs.open(DATA_PATH + "/" + db_name_ + "/" + schema_.table_name_ + INFO_FORMAT, std::ios::trunc | std::ios::out);
-        ofs << schema_ << std::endl << cnt_tuple_ << std::endl;
+        ofs << schema_ << std::endl << cnt_tuple_ << " " << spare_tuple_.size() << std::endl;
         for (auto tid: spare_tuple_) {
             ofs << tid << " ";
         }
@@ -163,10 +163,17 @@ namespace antidb {
      */
     bool Table::delete_tuple(tuple_id_t &tid) {
         auto it = spare_tuple_.find(tid);
-        if (it == spare_tuple_.end()) {
+        if (it != spare_tuple_.end()) {
             return false;
         }
         spare_tuple_.emplace(tid);
+        return true;
+    }
+
+    bool Table::exist_primary_key(key_t key) {
+        auto *vt = (value_t *) malloc(sizeof(value_t));
+        if (bpt->search(key, vt) == -1)
+            return false;
         return true;
     }
 

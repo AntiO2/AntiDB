@@ -32,7 +32,7 @@ namespace antidb {
                     throw error_command("NO such compared type " + std::string(op, 1));
             }
             int num_ = std::stoi(num);
-            if (num_ == 0 && (num != "0" || num != "-0")) {
+            if (num_ == 0 && (num != "0" && num != "-0")) {
                 throw error_command("Can't parse \"" + num + "\" to a number");
             }
             compared_num_ = num_;
@@ -50,6 +50,7 @@ namespace antidb {
                 case NO_CONDITION:
                     return true;
             }
+            return true;
         }
 
         CONDITION_TYPE getConditionType() const {

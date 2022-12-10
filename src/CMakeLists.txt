@@ -24,3 +24,9 @@ target_link_libraries(
         storage
         parser
 )
+### 哥们所有的库
+set(AntiDB_LIB
+        parser
+        storage
+        executor
+        server)

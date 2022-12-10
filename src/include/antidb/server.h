@@ -16,7 +16,7 @@ namespace antidb {
 
         void OpenServer();
 
-        auto ExecuteOneSQL(std::string &sql, std::unique_ptr<Database> *db) -> void;
+        static auto ExecuteOneSQL(std::string &&sql, std::unique_ptr<Database> *db) -> void;
     };
 
 } // antidb

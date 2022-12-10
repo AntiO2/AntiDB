@@ -14,7 +14,7 @@ namespace antidb {
 
     }
 
-    auto Server::ExecuteOneSQL(std::string &sql, std::unique_ptr<Database> *db) -> void {
+    auto Server::ExecuteOneSQL(std::string &&sql, std::unique_ptr<Database> *db) -> void {
         Statement stmt(sql);
         auto stmt_p = Parser::parse_sql(stmt);
         try {
@@ -51,7 +51,7 @@ namespace antidb {
                     if (db == nullptr) {
                         throw error_database("No database using");
                     }
-                    DeleteExecutor::DeleteByStmt((Delete_Statement *) stmt_p, &db);
+                    DeleteExecutor::DeleteByStmt((Delete_Statement *) stmt_p, db);
                     break;
                 case DROP: {
                     auto name = ((Drop_Statement *) stmt_p)->name_;
@@ -60,7 +60,7 @@ namespace antidb {
                             DropExecutor::DropTable(name, db);
                             break;
                         case DROP_DATABASE:
-                            if (db->get()->getDbName() == name) {
+                            if (db != nullptr && db->get()->getDbName() == name) {
                                 throw error_database("Database " + name + " is now used,can't drop it!");
                             }
                                 DropExecutor::DropDatabase(name);
@@ -81,7 +81,8 @@ namespace antidb {
             }
             }
             catch (std::exception &e) {
-                e.what();
+                std::cout << e.what() << std::endl;
+                throw e;
             }
     }
 } // antidb

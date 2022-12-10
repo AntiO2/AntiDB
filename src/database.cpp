@@ -39,7 +39,12 @@ namespace antidb {
         db_name_ = dbName;
     }
 
-    bool Database::find(const std::string &table) {
+    /**
+ * 查找数据库中是否有某个表名
+ * @param table
+ * @return
+ */
+    bool Database::find(const std::string &table) noexcept {
         return !(table_set_.find(table) == table_set_.end());
     }
 
@@ -91,16 +96,23 @@ namespace antidb {
              * 通过读取schema信息，获取table
              */
             std::ifstream ifs;
-            ifs.open(Database_path.append(table_info + INFO_FORMAT));
+            /**
+             * 哈哈，我是猪
+             */
+            ifs.open(Database_path + table_info + INFO_FORMAT);
             Schema schema;
             ifs >> schema;
             auto table = new Table(schema, db_name_);
             ifs >> table->cnt_tuple_;
+            int spare_num = 0;
+            ifs >> spare_num;
             uint32_t tid;
-            while (!ifs.eof()) {
+            while (spare_num) {
                 ifs >> tid;
                 table->addSpareTID(tid);
+                spare_num--;
             }
+            ifs.close();
             table_map_.insert(std::make_pair(table_info, table));
         }
     }

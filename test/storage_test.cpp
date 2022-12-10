@@ -29,7 +29,9 @@ namespace antidb {
         std::string str_ = data;
         EXPECT_EQ(str_, "AntiO2");
     }
-
+    /**
+     * 读写页测试
+     */
     TEST(STORAGE_TEST, DISABLED_PAGE_RW) {
         std::string sql = "create table anti_table(id int,age int,name string);";
         auto stmt = Statement(sql);
