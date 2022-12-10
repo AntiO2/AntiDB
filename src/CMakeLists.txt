@@ -1,3 +1,5 @@
+add_executable(AntiDB
+        app.cpp)
 add_library(parser
         STATIC
         parser.cpp)
@@ -30,3 +32,11 @@ set(AntiDB_LIB
         storage
         executor
         server)
+set_target_properties(AntiDB
+        PROPERTIES
+        EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+target_link_libraries(
+        AntiDB
+        ${AntiDB_LIB}
+)

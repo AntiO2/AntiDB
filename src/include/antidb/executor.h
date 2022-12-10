@@ -24,7 +24,7 @@ namespace antidb {
 
         static auto CreateDataBase(const std::string &database_name) -> bool;
 
-        static auto CreateTable(const Create_Statement &createStatement, std::unique_ptr<Database> *db) -> Table *;
+        static auto CreateTable(Create_Statement *createStatement, std::unique_ptr<Database> *db) -> Table *;
     };
 
     class UseExecutor : AbstractExecutor {
@@ -90,6 +90,35 @@ namespace antidb {
         static auto PrintValue(Select_Statement *s_stmt, std::vector<std::vector<Value>> &&values_s) -> void;
     };
 
+    class HelpExecutor : AbstractExecutor {
+    public:
+        static auto GetHelp(Help_Statement *helpStatement) -> void;
+
+        static auto SimpleHelp() -> void;
+
+        static auto InsertHelp() -> void;
+
+        static auto CreateHelp() -> void;
+
+        static auto SelectHelp() -> void;
+
+        static auto DeleteHelp() -> void;
+
+        static auto DropHelp() -> void;
+
+        static auto UseHelp() -> void;
+
+        static auto ExitHelp() -> void;
+
+        static auto ShowHelp() -> void;
+    };
+
+    class ShowExecutor : AbstractExecutor {
+    public:
+        static auto ShowTable(std::unique_ptr<Database> *db) -> void;
+
+        static auto ShowDatabase() -> void;
+    };
 } // antidb
 
 #endif //ANTIDB_EXECUTOR_H

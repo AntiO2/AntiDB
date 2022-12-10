@@ -72,23 +72,23 @@ namespace antidb {
         std::string sql = "create table anti_table(id int,age int,name string);";
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) Parser::parse_sql(stmt);
-        Table *table = CreateExecutor::CreateTable(*c_stmt, db1);
-
-        /**
-         * 生成tuple
-         */
-        std::vector<Value> v;
-        v.emplace_back(INT, 2003);
-        v.emplace_back(INT, 814);
-        char str[] = "AntiO2";
-        v.emplace_back(STRING, str, strlen(str));
-        auto tuple = Tuple(v, c_stmt->schema_);
-
-        /**
-         * 插入tuple看看
-         */
-        table->WriteTuple(tuple);
-        InsertExecutor::WriteTuple(tuple, table);
+//        Table *table = CreateExecutor::CreateTable(*c_stmt, &db1);
+//
+//        /**
+//         * 生成tuple
+//         */
+//        std::vector<Value> v;
+//        v.emplace_back(INT, 2003);
+//        v.emplace_back(INT, 814);
+//        char str[] = "AntiO2";
+//        v.emplace_back(STRING, str, strlen(str));
+//        auto tuple = Tuple(v, c_stmt->schema_);
+//
+//        /**
+//         * 插入tuple看看
+//         */
+//        table->WriteTuple(tuple);
+//        InsertExecutor::WriteTuple(tuple, table);
     }
 
     TEST(STORAGE_TEST, RECORY_DISK) {

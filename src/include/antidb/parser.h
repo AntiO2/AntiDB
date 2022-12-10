@@ -37,6 +37,10 @@ namespace antidb {
 
         static auto parse_use(Statement &statement) -> Use_Statement *;
 
+        static auto parse_help(Statement &statement) -> Help_Statement *;
+
+        static auto parse_show(Statement &statement) -> Show_Statement *;
+
         static auto is_token(char &c) -> bool;
 
         static auto is_space(char &c) -> bool;

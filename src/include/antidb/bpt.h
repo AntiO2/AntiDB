@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <vector>
 #include "antidb/config.h"
 #include "antidb/value.h"
 

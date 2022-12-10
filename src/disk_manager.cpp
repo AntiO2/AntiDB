@@ -4,6 +4,7 @@
 
 
 #include <string>
+#include <cstring>
 #include "antidb/disk_manager.h"
 #include "antidb/exception.h"
 

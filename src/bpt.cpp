@@ -10,8 +10,8 @@ using std::lower_bound;
 using std::upper_bound;
 
 namespace antidb {
-    int keycmp(const uint32_t &a, const uint32_t &b) {
-        return a == b ? 0 : (a - b);
+    int keycmp(const key_t &a, const key_t &b) {
+        return a == b ? 0 : (a < b ? -1 : 1);
     }
 
     OPERATOR_KEYCMP(index_t)

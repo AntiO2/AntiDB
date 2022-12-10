@@ -129,4 +129,8 @@ namespace antidb {
         std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + DATA_FORMAT);
         std::filesystem::remove(DATA_PATH + db_name_ + "/" + table_name + IDX_FORMAT);
     }
+
+    const std::set<std::string> &Database::getTableSet() const {
+        return table_set_;
+    }
 } // antidb

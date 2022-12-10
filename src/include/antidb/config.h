@@ -17,18 +17,26 @@ namespace antidb {
     const std::string DATA_FORMAT = ".dat";
     const std::string INFO_FORMAT = ".info";
     const std::string IDX_FORMAT = ".idx";
+    const std::string ANTIDB_VERSION = "0.2";
     enum SQL_type {
+        NONE,
         INSERT,
         CREATE,
         SELECT,
         DELETE,
         DROP,
         USE,
-        EXIT
+        EXIT,
+        HELP,
+        SHOW
     };
     enum CREATE_TYPE {
         CREATE_TABLE,
         CREATE_DATABASE
+    };
+    enum SHOW_TYPE {
+        SHOW_TABLE,
+        SHOW_DATABASE
     };
     enum TYPE_ID {
         INT,
@@ -44,6 +52,7 @@ namespace antidb {
         LESS,
         EQUAL
     };
+
     using page_id_t = int32_t;
     using tuple_id_t = uint32_t;
 

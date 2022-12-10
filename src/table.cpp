@@ -53,8 +53,8 @@ namespace antidb {
     }
 
     tuple_id_t Table::WriteTuple(const Tuple &tuple) {
-        char *dst = nullptr;
-        tuple_id_t tid = -1;
+        char *dst;
+        tuple_id_t tid;
         if (spare_tuple_.empty()) {
             if (cnt_tuple_ >= tuple_max_num_) {
                 throw error_table("AntiDB:Table Overflow");

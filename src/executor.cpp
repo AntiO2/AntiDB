@@ -6,7 +6,7 @@
 #include "antidb/executor.h"
 #include "antidb/exception.h"
 #include "antidb/table.h"
-
+#include <climits>
 namespace antidb {
     /**
      * 已弃用
@@ -17,7 +17,7 @@ namespace antidb {
         if (createStatement->createType_ == CREATE_DATABASE) {
             CreateDataBase(createStatement->name_);
         }
-        CreateTable(*createStatement, db);
+        CreateTable(createStatement, db);
     }
 
     auto CreateExecutor::CreateDataBase(const std::string &database_name) -> bool {
@@ -33,8 +33,8 @@ namespace antidb {
     }
 
     auto
-    CreateExecutor::CreateTable(const Create_Statement &createStatement, std::unique_ptr<Database> *db) -> Table * {
-        auto table = new Table(createStatement.schema_, db->get()->getDbName());
+    CreateExecutor::CreateTable(Create_Statement *createStatement, std::unique_ptr<Database> *db) -> Table * {
+        auto table = new Table(createStatement->schema_, db->get()->getDbName());
         /**
          * 如果重名，则抛出
         */
@@ -53,12 +53,12 @@ namespace antidb {
          * create table 还需要记录元信息
          */
         std::fstream fsm;
-        fsm.open(DATA_PATH + db->get()->getDbName() + "/" + createStatement.schema_.table_name_ + ".info",
+        fsm.open(DATA_PATH + db->get()->getDbName() + "/" + createStatement->schema_.table_name_ + ".info",
                  std::ios::trunc | std::ios::out);
         if (!fsm.is_open()) {
-            throw error_file("Cant open information file : " + createStatement.schema_.table_name_ + ".info");
+            throw error_file("Cant open information file : " + createStatement->schema_.table_name_ + ".info");
         }
-        fsm << createStatement.schema_;
+        fsm << createStatement->schema_;
         fsm.flush();
         fsm.close();
         return table;
@@ -196,6 +196,7 @@ namespace antidb {
         } else {
             int left = INT_MIN;
             int right = INT_MAX;
+
             tuple_id_t tid{0};
             std::vector<tuple_id_t> tids_;
             switch (s_stmt->condition.getConditionType()) {
@@ -204,12 +205,12 @@ namespace antidb {
                     break;
                 case GREATER: {
                     auto left_ = s_stmt->condition.getComparedNum();
-                    table->bpt->search_range(&left_, right, tids_, table->getRealTuple() + 1);
+                    table->bpt->search_range(&left_, right, tids_, (size_t) right - (size_t) left_ + 1);
                     break;
                 }
                 case LESS: {
                     auto right_ = s_stmt->condition.getComparedNum() - 1;
-                    table->bpt->search_range(&left, right_, tids_, table->getRealTuple() + 1);
+                    table->bpt->search_range(&left, right_, tids_, (size_t) right_ - (size_t) left + 1);
                     break;
                 }
 
@@ -355,6 +356,7 @@ namespace antidb {
         } else {
             int left = INT_MIN;
             int right = INT_MAX;
+
             tuple_id_t tid{0};
             std::vector<tuple_id_t> tids_;
             switch (deleteStatement->condition.getConditionType()) {
@@ -363,12 +365,12 @@ namespace antidb {
                     break;
                 case GREATER: {
                     auto left_ = deleteStatement->condition.getComparedNum();
-                    table->bpt->search_range(&left_, right, tids_, table->getRealTuple() + 1);
+                    table->bpt->search_range(&left_, right, tids_, (size_t) right - (size_t) left_ + 1);
                     break;
                 }
                 case LESS: {
                     auto right_ = deleteStatement->condition.getComparedNum() - 1;
-                    table->bpt->search_range(&left, right_, tids_, table->getRealTuple() + 1);
+                    table->bpt->search_range(&left, right_, tids_, (size_t) right_ - (size_t) left + 1);
                     break;
                 }
 
@@ -429,6 +431,130 @@ namespace antidb {
                 }
             }
             printf("\n");
+        }
+    }
+
+    auto HelpExecutor::GetHelp(Help_Statement *helpStatement) -> void {
+        std::cout << "AntiDB Version:" + ANTIDB_VERSION << std::endl;
+        switch (helpStatement->helpType) {
+            case NONE:
+                SimpleHelp();
+                break;
+            case INSERT:
+                InsertHelp();
+                break;
+            case CREATE:
+                CreateHelp();
+                break;
+            case SELECT:
+                SelectHelp();
+                break;
+            case DELETE:
+                DeleteHelp();
+                break;
+            case DROP:
+                DropHelp();
+                break;
+            case USE:
+                UseHelp();
+                break;
+            case EXIT:
+                ExitHelp();
+                break;
+            case HELP:
+                SimpleHelp();
+                break;
+            case SHOW:
+                ShowHelp();
+                break;
+        }
+        std::cout << std::endl;
+    }
+
+    auto HelpExecutor::SimpleHelp() -> void {
+        std::cout << "This is a simple guide for you to use AntiDB\n"
+                     "SQL sentence is required in typical format"
+                     "\n------------------------------\n"
+                     "And it is very important to exit AntiDB by command \"exit\"!!!"
+                     "\n------------------------------\n"
+                     "Type in \"help <option>\" to learn more\n"
+                     "Here are options you can use\n"
+                     "insert\tcreate\tselect\tdelete\tdrop\tuse\texit\tshow\t";
+    }
+
+    auto HelpExecutor::InsertHelp() -> void {
+        std::cout << "<usage>insert <table> values (<const-value>[, <const-value>…])\n"
+                     "You can't use default value\n"
+                     "Before INSERT, you should use a database";
+    }
+
+    auto HelpExecutor::CreateHelp() -> void {
+        std::cout << "Create SQL can create new database or new table\n"
+                     "<usage>create database <database_name>\n"
+                     "<usage>create table <table-name> (\n"
+                     "<column> <type> [primary], \n"
+                     "…)\n"
+                     "Before create a table, you should use a database\n";
+    }
+
+    auto HelpExecutor::SelectHelp() -> void {
+        std::cout << "select <column> from <table> [ where <cond> ]\n"
+                     "<column>： <column-name> | *\n"
+                     "* means select all columns\n"
+                     "where is an optional sentence"
+                     "\"where\"'s format is [col_name op const_value\n"
+                     "AntiDB only support compare integer\n"
+                     "[op]:< or = or >";
+    }
+
+    auto HelpExecutor::DeleteHelp() -> void {
+        std::cout << "delete <table> [ where <cond> ]\n"
+                     "delete <table> without condition means delete all tuples\n"
+                     "where is an optional sentence"
+                     "\"where\"'s format is [col_name op const_value\n"
+                     "AntiDB only support compare integer\n"
+                     "[op]:< or = or >";
+    }
+
+    auto HelpExecutor::DropHelp() -> void {
+        std::cout << "<usage>drop database <database name>\n"
+                     "<usage>drop table <table-name>\n"
+                     "You can't delete the database which you are using now";
+    }
+
+    auto HelpExecutor::UseHelp() -> void {
+        std::cout << "<usage>use <dbname>\n";
+    }
+
+    auto HelpExecutor::ExitHelp() -> void {
+        std::cout << "<usage>exit\n"
+                     "It's necessary that quit AntiDB by this command";
+    }
+
+    auto HelpExecutor::ShowHelp() -> void {
+        std::cout << "<usage>show database\n"
+                     "Display database's names thar are on your disk\n"
+                     "<usage>show table\n"
+                     "show table's names in the database which you are using";
+    }
+
+    auto ShowExecutor::ShowDatabase() -> void {
+        if (!(std::filesystem::exists(DATA_PATH) && std::filesystem::is_directory(DATA_PATH))) {
+            return;
+        }
+        auto list = std::filesystem::directory_iterator(DATA_PATH);
+        for (auto &file: list) {
+            if (std::filesystem::is_directory(file))
+                std::cout << file.path().filename() << std::endl;
+        }
+    }
+
+    auto ShowExecutor::ShowTable(std::unique_ptr<Database> *db) -> void {
+        if (*db == nullptr) {
+            throw error_database("No selected database");
+        }
+        for (auto table: db->get()->getTableSet()) {
+            std::cout << table << std::endl;
         }
     }
 } // antidb

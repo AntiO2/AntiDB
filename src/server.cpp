@@ -3,24 +3,35 @@
 //
 
 #include <iostream>
+#include <string>
 #include "antidb/server.h"
 #include "antidb/parser.h"
 #include "antidb/statement.h"
 #include "antidb/executor.h"
-
+#include "antidb/exception.h"
 namespace antidb {
     void Server::OpenServer() {
         std::unique_ptr<Database> db_used_ = nullptr;//现在使用的db
-
+        while (true) {
+            std::cout << "(AntiDB)>>>";
+            std::string sql;
+            std::getline(std::cin, sql);
+            if (!ExecuteOneSQL(std::move(sql), &db_used_)) {
+                delete db_used_.get();
+                db_used_ = nullptr;
+                break;
+            }
+        }
     }
 
-    auto Server::ExecuteOneSQL(std::string &&sql, std::unique_ptr<Database> *db) -> void {
+    auto Server::ExecuteOneSQL(std::string &&sql, std::unique_ptr<Database> *db) -> bool {
         Statement stmt(sql);
-        auto stmt_p = Parser::parse_sql(stmt);
         try {
+            auto stmt_p = Parser::parse_sql(stmt);
+
             switch (stmt_p->sqlType_) {
                 case INSERT:
-                    if (db == nullptr) {
+                    if (*db == nullptr) {
                         throw error_database("No database using");
                     }
                     InsertExecutor::InsertByStmt((Insert_Statement *) stmt_p, db);
@@ -29,15 +40,16 @@ namespace antidb {
                     switch (((Create_Statement *) stmt_p)->createType_) {
                         case CREATE_DATABASE:
                             CreateExecutor::CreateDataBase(((Create_Statement *) stmt_p)->name_);
+                            break;
                         case CREATE_TABLE:
-                            if (db == nullptr) {
+                            if (db == nullptr || *db == nullptr) {
                                 throw error_database("No database using");
                             }
-                            CreateExecutor::CreateTable(*((Create_Statement *) stmt_p), db);
+                            CreateExecutor::CreateTable((Create_Statement *) stmt_p, db);
                     }
-                        break;
+                    break;
                 case SELECT: {
-                    if (db == nullptr) {
+                    if (*db == nullptr) {
                         throw error_database("No database using");
                     }
 
@@ -48,7 +60,7 @@ namespace antidb {
 
 
                 case DELETE:
-                    if (db == nullptr) {
+                    if (*db == nullptr) {
                         throw error_database("No database using");
                     }
                     DeleteExecutor::DeleteByStmt((Delete_Statement *) stmt_p, db);
@@ -60,11 +72,16 @@ namespace antidb {
                             DropExecutor::DropTable(name, db);
                             break;
                         case DROP_DATABASE:
-                            if (db != nullptr && db->get()->getDbName() == name) {
+                            /**
+                             * CHECK
+                             * 这里不知道为啥嘛不能使用&&来短路
+                             */
+                            if (db != nullptr && (*db != nullptr) && db->get()->getDbName() == name) {
                                 throw error_database("Database " + name + " is now used,can't drop it!");
                             }
-                                DropExecutor::DropDatabase(name);
-                                break;
+
+                            DropExecutor::DropDatabase(name);
+                            break;
                     }
                     break;
                 }
@@ -74,15 +91,39 @@ namespace antidb {
                     *db = UseExecutor::UseDataBase(db_name);
                     break;
                 }
+                case HELP: {
+                    HelpExecutor::GetHelp((Help_Statement *) stmt_p);
+                    break;
+                }
                 case EXIT:
                     *db = nullptr;
                     std::cout << "Bye bye" << std::endl;
+                    return false;
+                case NONE: {
+                    throw error_command("Can't parse your command");
+                }
+
+
+                case SHOW:
+                    switch (((Show_Statement *) stmt_p)->showType) {
+
+                        case SHOW_TABLE:
+                            if (db == nullptr || *db == nullptr) {
+                                throw error_database("No database selected");
+                            }
+                            ShowExecutor::ShowTable(db);
+                            break;
+                        case SHOW_DATABASE:
+                            ShowExecutor::ShowDatabase();
+                            break;
+                    }
+
                     break;
             }
-            }
-            catch (std::exception &e) {
-                std::cout << e.what() << std::endl;
-                throw e;
-            }
+        } catch (std::exception &e) {
+            std::cout << e.what() << std::endl;
+            std::cout << R"(Please type in "help" or "help <command name>" for help)" << std::endl;
+        }
+        return true;
     }
 } // antidb

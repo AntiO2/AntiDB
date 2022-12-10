@@ -68,6 +68,9 @@ namespace antidb {
      * @return
      */
     auto Parser::parse_sql(Statement &statement) -> Statement * {
+        if (statement.commandline_.empty()) {
+            throw error_command("Please type in sql");
+        }
         get_rid_last_sem(statement.commandline_);
         get_token(statement.commandline_, statement.tokens);
 
@@ -105,7 +108,15 @@ namespace antidb {
             statement.sqlType_ = EXIT;
             return &statement;
         }
-        return nullptr;
+        if (first_token == "help") {
+            statement.sqlType_ = HELP;
+            return parse_help(statement);
+        }
+        if (first_token == "show") {
+            statement.sqlType_ = SHOW;
+            return parse_show(statement);
+        }
+        throw error_command("SQL isn't correct no such type as: " + first_token);
     }
 
     /**
@@ -251,7 +262,7 @@ namespace antidb {
                             break;
                         }
                     default:
-                        throw error_command("Invalid creat table,please check it");
+                        throw error_command("Invalid create table,please check it:error occurred near :" + token);
                 }
             }
             return createStatement;
@@ -264,7 +275,7 @@ namespace antidb {
             createStatement->createType_ = CREATE_DATABASE;
             return createStatement;
         }
-        return nullptr;
+        throw error_command("You can't create " + createStatement->tokens[1]);
     }
 
     /**
@@ -456,6 +467,57 @@ namespace antidb {
             }
         }
         throw error_type("No such type");
+    }
+
+    auto Parser::parse_help(Statement &statement) -> Help_Statement * {
+        auto h_stmt = new Help_Statement(std::move(statement));
+        h_stmt->helpType = NONE;
+        if (h_stmt->tokens.size() == 1 || h_stmt->tokens.size() != 2) {
+            return h_stmt;
+        }
+        auto help = h_stmt->tokens.at(1);
+        if (help == "insert") {
+            h_stmt->helpType = INSERT;
+        }
+        if (help == "create") {
+            h_stmt->helpType = CREATE;
+        }
+        if (help == "select") {
+            h_stmt->helpType = SELECT;
+        }
+        if (help == "delete") {
+            h_stmt->helpType = DELETE;
+        }
+        if (help == "drop") {
+            h_stmt->helpType = DROP;
+        }
+        if (help == "use") {
+            h_stmt->helpType = USE;
+        }
+        if (help == "exit") {
+            h_stmt->helpType = EXIT;
+        }
+        if (help == "show") {
+            h_stmt->helpType = SHOW;
+        }
+        return h_stmt;
+    }
+
+    auto Parser::parse_show(Statement &statement) -> Show_Statement * {
+        auto show_stmt = new Show_Statement(std::move(statement));
+        if (show_stmt->tokens.size() != 2) {
+            throw error_command("Can't parse show command type: " + show_stmt->commandline_);
+        }
+        auto show_ = show_stmt->tokens.at(1);
+        if (show_ == "table") {
+            show_stmt->showType = SHOW_TABLE;
+            return show_stmt;
+        }
+        if (show_ == "database") {
+            show_stmt->showType = SHOW_DATABASE;
+            return show_stmt;
+        }
+        throw error_command("Can't parse near: " + show_);
     }
 
 } // antidb

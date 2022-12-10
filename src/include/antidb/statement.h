@@ -79,6 +79,18 @@ namespace antidb {
         std::string table_name_;
         std::vector<std::string> value_str;
     };
+
+    class Show_Statement : public Statement {
+    public:
+        explicit Show_Statement(Statement &&statement) : Statement(std::move(statement)) {};
+        SHOW_TYPE showType;
+    };
+
+    class Help_Statement : public Statement {
+    public:
+        explicit Help_Statement(Statement &&statement) : Statement(std::move(statement)) {};
+        SQL_type helpType;
+    };
 } // antidb
 
 

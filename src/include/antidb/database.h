@@ -49,6 +49,8 @@ namespace antidb {
 
         auto getTable(const std::string &table) -> Table *;
 
+        const std::set<std::string> &getTableSet() const;
+
     private:
         std::string db_name_;
         std::set<std::string> table_set_;
