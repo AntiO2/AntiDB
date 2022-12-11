@@ -18,8 +18,11 @@ namespace antidb {
     class error_command : public std::runtime_error { ;
     public:
         explicit error_command(const std::string &error) : std::runtime_error(error) {}
+    };
 
-        void what() {}
+    class error_type : public std::runtime_error { ;
+    public:
+        explicit error_type(const std::string &error) : std::runtime_error(error) {}
     };
 
     class error_table : public std::runtime_error { ;

@@ -1,16 +1,21 @@
+add_executable(AntiDB
+        app.cpp)
 add_library(parser
         STATIC
         parser.cpp)
 add_library(storage
         STATIC
         disk_manager.cpp
-        table.cpp)
+        table.cpp
+        database.cpp
+        bpt.cpp)
 add_library(executor
         STATIC
         executor.cpp)
 add_library(server
         STATIC
-        server.cpp)
+        server.cpp
+        database.cpp)
 target_link_libraries(
         server
         parser
@@ -19,4 +24,19 @@ target_link_libraries(
 target_link_libraries(
         executor
         storage
+        parser
+)
+### 哥们所有的库
+set(AntiDB_LIB
+        parser
+        storage
+        executor
+        server)
+set_target_properties(AntiDB
+        PROPERTIES
+        EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+target_link_libraries(
+        AntiDB
+        ${AntiDB_LIB}
 )

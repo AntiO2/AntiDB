@@ -1,7 +1,5 @@
 # AntiDB
 
-![shock](docs/assets/shock.gif)
-
 ## 简介
 
 关系型数据库系统

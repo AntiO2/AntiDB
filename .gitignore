@@ -39,7 +39,8 @@
 build/
 cmake-build-debug/
 lib/
-
+bin/
 #idea
 .idea/
 .idea
+data/

@@ -23,3 +23,11 @@ target_link_libraries(storage_test
         parser
         executor
         ${GTEST_LIB})
+
+### server_test
+### 这个是最后的测试
+add_executable(server_test server_test.cpp)
+target_link_libraries(server_test
+        server
+        ${GTEST_LIB}
+        )

@@ -6,15 +6,17 @@
 #define ANTIDB_SERVER_H
 
 #include <string>
-
+#include "antidb/database.h"
+#include "antidb/executor.h"
 namespace antidb {
 
     class Server {
     public:
         Server() = default;
 
-        std::string database_;//现在使用的db名称
         void OpenServer();
+
+        static auto ExecuteOneSQL(std::string &&sql, std::unique_ptr<Database> *db) -> bool;
     };
 
 } // antidb
