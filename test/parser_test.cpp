@@ -46,7 +46,7 @@ namespace antidb {
         EXPECT_EQ(sqlType, antidb::INSERT);
     }
 
-    TEST(PARSER_TEST, TOKEN_v2) {
+    TEST(PARSER_TEST, DISABLED_TOKEN_v2) {
         std::vector<std::string> tokens;
         antidb::Parser parse_instance;
         std::string sql(" create table new_table(column int primary,email string ,anti int); ");
@@ -63,7 +63,6 @@ namespace antidb {
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) antidb::Parser::parse_sql(stmt);
         EXPECT_EQ(1, 1);
-        c_stmt->schema_.toString();
     }
 
     TEST(PARSER_TEST, CREATE_TABLE_2) {
@@ -71,7 +70,104 @@ namespace antidb {
         auto stmt = Statement(sql);
         auto c_stmt = (Create_Statement *) antidb::Parser::parse_sql(stmt);
         EXPECT_EQ(1, 1);
-        c_stmt->schema_.toString();
+    }
+
+    TEST(PARSER_TEST, DISABLED_DROP) {
+        std::string sql("drop database antio2");
+        auto stmt = Statement(sql);
+        auto d_stmt = (Drop_Statement *) Parser::parse_sql(stmt);
+        EXPECT_EQ(d_stmt->name_, "antio2");
+        EXPECT_EQ(d_stmt->dropType_, DROP_DATABASE);
+    }
+
+    TEST(PARSER_TEST, DISABLED_DROP_TABLE) {
+        std::string sql("drop table antio2");
+        auto stmt = Statement(sql);
+        auto d_stmt = (Drop_Statement *) Parser::parse_sql(stmt);
+        EXPECT_EQ(d_stmt->name_, "antio2");
+        EXPECT_EQ(d_stmt->dropType_, DROP_TABLE);
+    }
+
+    TEST(PARSER_TEST, DISABLED_INSERT_TABLE) {
+        std::string sql("insert table antio2 values(1,\"antiO2\",814);");
+        auto stmt = Statement(sql);
+        auto i_stmt = (Insert_Statement *) antidb::Parser::parse_sql(stmt);
+        EXPECT_EQ(i_stmt->value_str.size(), 3);
+        EXPECT_EQ(i_stmt->table_name_, "antio2");
+        for (const auto &value: i_stmt->value_str) {
+            std::cout << value << std::endl;
+        }
+
+    }
+
+    TEST(PARSER_TEST, DISABLED_SELECT) {
+
+        {
+            std::string sql("select * from anti_table where dwdwdwdwdwd;");
+            auto stmt = Statement(sql);
+            EXPECT_ANY_THROW((Select_Statement *) antidb::Parser::parse_sql(stmt));
+        }
+        {
+            std::string sql("select * from anti_table;");
+            auto stmt = Statement(sql);
+            auto s_stmt = (Select_Statement *) antidb::Parser::parse_sql(stmt);
+//            EXPECT_EQ(s_stmt->conditionType_,NO_CONDITION);
+            EXPECT_EQ(s_stmt->table_name_, "anti_table");
+            EXPECT_EQ(s_stmt->select_all_, true);
+        }
+        {
+            std::string sql("select age from anti_table;");
+            auto stmt = Statement(sql);
+            auto s_stmt = (Select_Statement *) antidb::Parser::parse_sql(stmt);
+//            EXPECT_EQ(s_stmt->conditionType_,NO_CONDITION);
+            EXPECT_EQ(s_stmt->table_name_, "anti_table");
+            EXPECT_EQ(s_stmt->select_all_, false);
+            EXPECT_EQ(s_stmt->col_name_, "age");
+        }
+        {
+            std::string sql("select age from anti_table where i > 3;");
+            auto stmt = Statement(sql);
+            auto s_stmt = (Select_Statement *) antidb::Parser::parse_sql(stmt);
+//            EXPECT_EQ(s_stmt->conditionType_,GREATER);
+            EXPECT_EQ(s_stmt->table_name_, "anti_table");
+            EXPECT_EQ(s_stmt->select_all_, false);
+            EXPECT_EQ(s_stmt->col_name_, "age");
+//            EXPECT_EQ(s_stmt->compared_,"3");
+//            EXPECT_EQ(s_stmt->condition_col_,"i");
+
+        }
+    }
+
+    TEST(Parser, Parser_DELETE) {
+        {
+            std::string sql("delete;");
+            auto stmt = Statement(sql);
+            EXPECT_ANY_THROW(antidb::Parser::parse_sql(stmt));
+        }
+
+        {
+            std::string sql("delete table;");
+            auto stmt = Statement(sql);
+            auto d_stmt = (Delete_Statement *) antidb::Parser::parse_sql(stmt);
+            EXPECT_EQ(d_stmt->has_condition, false);
+            EXPECT_EQ(d_stmt->table_name_, "table");
+        }
+        {
+            std::string sql("delete table where 1 = 2;");
+            auto stmt = Statement(sql);
+            auto d_stmt = (Delete_Statement *) antidb::Parser::parse_sql(stmt);
+            EXPECT_EQ(d_stmt->has_condition, true);
+            EXPECT_EQ(d_stmt->table_name_, "table");
+            EXPECT_EQ(d_stmt->condition.getComparedNum(), 2);
+            EXPECT_EQ(d_stmt->condition.getConditionType(), EQUAL);
+            EXPECT_EQ(d_stmt->condition.getColName(), "1");
+            auto v1 = Value(INT, 3);
+            EXPECT_EQ(d_stmt->condition.condition_is_true(v1), false);
+            auto v2 = Value(INT, 2);
+            EXPECT_EQ(d_stmt->condition.condition_is_true(v2), true);
+        }
+
+
     }
 
 }

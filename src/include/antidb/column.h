@@ -6,6 +6,7 @@
 #define ANTIDB_COLUMN_H
 #include <string>
 #include <iostream>
+#include <fstream>
 #include "antidb/config.h"
 namespace antidb {
     /**
@@ -52,8 +53,24 @@ namespace antidb {
             return is_primary_;
         };
 
-        auto toString() const -> void {
-            std::cout << col_name_ << " " << type_ << " " << is_primary_ << std::endl;
+        /**
+         * 以下是读写column的内容
+         * @param os
+         * @param column
+         * @return
+         */
+        friend std::ostream &operator<<(std::ostream &os, const Column &column) {
+            os << column.type_ << " " << column.col_name_ << " "
+               << column.is_primary_ << " " << column.col_size_;
+            return os;
+        }
+
+        friend std::ifstream &operator>>(std::ifstream &os, Column &column) {
+            unsigned int type;
+            os >> type;
+            column.type_ = static_cast<TYPE_ID> (type);
+            os >> column.col_name_ >> column.is_primary_ >> column.col_size_;
+            return os;
         }
 
         /**

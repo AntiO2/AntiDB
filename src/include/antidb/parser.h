@@ -13,7 +13,7 @@
 #include "antidb/exception.h"
 #include "antidb/config.h"
 #include "antidb/statement.h"
-
+#include "antidb/value.h"
 namespace antidb {
 
 
@@ -27,19 +27,27 @@ namespace antidb {
 
         static auto parse_create(Statement &statement) -> Create_Statement *;
 
-        static auto parse_insert(Statement &statement) -> Statement *;
+        static auto parse_insert(Statement &statement) -> Insert_Statement *;
 
-        static auto parse_select(Statement &statement) -> Statement *;
+        static auto parse_select(Statement &statement) -> Select_Statement *;
 
-        static auto parse_drop(Statement &statement) -> Statement *;
+        static auto parse_drop(Statement &statement) -> Drop_Statement *;
 
-        static auto parse_delete(Statement &statement) -> Statement *;
+        static auto parse_delete(Statement &statement) -> Delete_Statement *;
 
         static auto parse_use(Statement &statement) -> Use_Statement *;
+
+        static auto parse_help(Statement &statement) -> Help_Statement *;
+
+        static auto parse_show(Statement &statement) -> Show_Statement *;
 
         static auto is_token(char &c) -> bool;
 
         static auto is_space(char &c) -> bool;
+
+        static auto spilt(std::string command, std::vector<std::string> &values) -> void;
+
+        static auto str_to_value(TYPE_ID typeId, std::string str) -> Value;
 
     private:
         /**
