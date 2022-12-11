@@ -292,8 +292,8 @@ namespace antidb {
         Server::ExecuteOneSQL("select * from antio2 where id = 0", &db);
         Server::ExecuteOneSQL("select age from antio2 where age=22222", &db);
         Server::ExecuteOneSQL("select * from antio3", &db);
-        Server::ExecuteOneSQL("select * from antio3 where id = 1", &db);
-        Server::ExecuteOneSQL("select age from antio3 where id = 2", &db);
+        Server::ExecuteOneSQL("select * from antio3 where id > -10000", &db);
+        Server::ExecuteOneSQL("select age from antio3 where id < 10000", &db);
         Server::ExecuteOneSQL("select name from antio3 where id =3", &db);
     }
 

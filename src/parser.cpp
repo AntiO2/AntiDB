@@ -69,7 +69,8 @@ namespace antidb {
      */
     auto Parser::parse_sql(Statement &statement) -> Statement * {
         if (statement.commandline_.empty()) {
-            throw error_command("Please type in sql");
+            statement.sqlType_ = NONE;
+            return &statement;
         }
         get_rid_last_sem(statement.commandline_);
         get_token(statement.commandline_, statement.tokens);

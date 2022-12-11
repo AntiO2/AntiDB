@@ -194,8 +194,8 @@ namespace antidb {
                 results.emplace_back(vs);
             }
         } else {
-            int left = INT_MIN;
-            int right = INT_MAX;
+            key_t left = INT_MIN;
+            key_t right = INT_MAX;
 
             tuple_id_t tid{0};
             std::vector<tuple_id_t> tids_;
@@ -214,9 +214,14 @@ namespace antidb {
                     break;
                 }
 
-                case EQUAL:
-                    table->bpt->search(s_stmt->condition.getComparedNum(), &tid);
-                    tids_.push_back(tid);
+                case EQUAL: {
+                    int flag = table->bpt->search(s_stmt->condition.getComparedNum(), tid);
+                    if (flag != -1) {
+                        tids_.push_back(tid);
+                    }
+                }
+
+
                     break;
             }
             /**
@@ -354,8 +359,8 @@ namespace antidb {
                 table->delete_tuple(i);
             }
         } else {
-            int left = INT_MIN;
-            int right = INT_MAX;
+            key_t left = INT_MIN;
+            key_t right = INT_MAX;
 
             tuple_id_t tid{0};
             std::vector<tuple_id_t> tids_;
@@ -374,10 +379,12 @@ namespace antidb {
                     break;
                 }
 
-                case EQUAL:
-                    table->bpt->search(deleteStatement->condition.getComparedNum(), &tid);
-                    tids_.push_back(tid);
-                    break;
+                case EQUAL: {
+                    int flag = table->bpt->search(deleteStatement->condition.getComparedNum(), tid);
+                    if (flag != -1) {
+                        tids_.push_back(tid);
+                    }
+                }
             }
             /**
              * 根据tuple id,寻找对应的tuple

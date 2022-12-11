@@ -100,7 +100,7 @@ namespace antidb {
                     std::cout << "Bye bye" << std::endl;
                     return false;
                 case NONE: {
-                    throw error_command("Can't parse your command");
+                    return true;
                 }
 
 

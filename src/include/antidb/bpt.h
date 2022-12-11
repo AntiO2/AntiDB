@@ -94,7 +94,7 @@ namespace antidb {
         bplus_tree(const char *path, bool force_empty = false);
 
         /* abstract operations */
-        int search(const key_t &key, value_t *value) const;
+        int search(const key_t &key, value_t &value) const;
 
         int search_range(key_t *left, const key_t &right,
                          std::vector<value_t> &values, size_t max, bool *next = nullptr) const;
@@ -201,7 +201,7 @@ namespace antidb {
         mutable FILE *fp;
         mutable int fp_level;
 
-        void open_file(const char *mode = "wb+") const {
+        void open_file(const char *mode = "rb+") const {
             if (fp_level == 0)
                 fp = fopen(path, mode);
             ++fp_level;

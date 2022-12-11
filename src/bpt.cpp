@@ -73,7 +73,7 @@ namespace antidb {
  * @param value
  * @return
  */
-    int bplus_tree::search(const key_t &key, value_t *value) const {
+    int bplus_tree::search(const key_t &key, value_t &value) const {
         leaf_node_t leaf;
         map(&leaf, search_leaf(key));
 
@@ -81,7 +81,7 @@ namespace antidb {
         record_t *record = find(leaf, key);
         if (record != leaf.children + leaf.n) {
             // always return the lower bound
-            *value = record->value;
+            value = record->value;
             return keycmp(record->key, key);
         } else {
             return -1;

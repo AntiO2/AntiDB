@@ -171,7 +171,7 @@ namespace antidb {
     }
 
     bool Table::exist_primary_key(key_t key) {
-        auto *vt = (value_t *) malloc(sizeof(value_t));
+        value_t vt;
         if (bpt->search(key, vt) == -1)
             return false;
         return true;
