@@ -201,7 +201,7 @@ namespace antidb {
         mutable FILE *fp;
         mutable int fp_level;
 
-        void open_file(const char *mode = "rb+") const {
+        void open_file(const char *mode = "wb+") const {
             if (fp_level == 0)
                 fp = fopen(path, mode);
             ++fp_level;
