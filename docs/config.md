@@ -6,7 +6,7 @@
 ## 获取源码
 
 - 通过`git clone git@github.com:AntiO2/AntiDB.git`拉取源码
--
+- 或者访问[Release v0.2.1 · AntiO2/AntiDB (github.com)](https://github.com/AntiO2/AntiDB/releases/tag/v0.2.1)下载源码
 
 ## Windows
 
